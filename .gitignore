@@ -8,6 +8,7 @@ node_modules
 **/testFiles/**/.cache/**
 *.noseids
 .nyc_output
+.vscode
 .vscode-test
 __pycache__
 npm-debug.log
