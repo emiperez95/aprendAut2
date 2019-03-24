@@ -1,21 +1,13 @@
 import numpy as np
 from functools import reduce
-
-class Tree(object):
-  def __init__(self):
-      self.true_branch = None
-      self.false_branch = None
-      self.label = None
-      self.threshold = None
-      self.value = None
-
-  def __str__(self):
-    return '(L: ' + str(self.label) + '  T: ' + str(self.threshold) + '   V: ' + str(self.value) + '  ' + str(self.false_branch) + '  ' + str(self.true_branch) + ')'
+from node import Node
 
 class tree:
-  def __init__ (self,trainingData):
+  def __init__ (self,trainingData, catDict = None, classDict = None):
     self.entropy = float(self.__shannonEntropy(trainingData))
     self.lengthTS = float(len(trainingData))
+    self.catDict = catDict
+    self.classDict = classDict
     print(self.__id3(trainingData, 4, [0,1,2,3]))
 
   def __shannonEntropy(self, examples):
@@ -31,27 +23,28 @@ class tree:
 
 
   def __id3(self, examples, target_attribute, attributes):
-    newRootNode = Tree()
+    newRootNode = Node(self.catDict, self.classDict)
     countOfEachClass = self.__countOfEachClass(examples)
     mostCommonValue = max(countOfEachClass, key=lambda item: item[1])[0]
     if (len(countOfEachClass) == 1):
-      newRootNode.value = countOfEachClass[0][0]
+      newRootNode.nodeClass = countOfEachClass[0][0]
       return newRootNode
     if (len(attributes) == 0):
-      newRootNode.value = mostCommonValue
+      newRootNode.nodeClass = mostCommonValue
       return newRootNode
-    bestAttribute, threshold, partitionLess, partitionEqualGreat  = self.__bestFitAttribute(examples, attributes)
+    bestAttribute, threshold, partitionLess, partitionEqualGreat, bestIG  = self.__bestFitAttribute(examples, attributes)
     newAttributesSet = list(set(attributes) - {bestAttribute})
-    newRootNode.label = bestAttribute
+    newRootNode.cat = bestAttribute
     newRootNode.threshold = threshold
+    newRootNode.gain = bestIG
     if (len(partitionLess) == 0):
-      newRootNode.false_branch = Tree()
-      newRootNode.false_branch.label = mostCommonValue
+      newRootNode.false_branch = Node(self.catDict, self.classDict)
+      newRootNode.false_branch.nodeClass = mostCommonValue
     else:
       newRootNode.false_branch = self.__id3(partitionLess, target_attribute, newAttributesSet)
     if (len(partitionEqualGreat) == 0):
-      newRootNode.true_branch = Tree()
-      newRootNode.true_branch.label = mostCommonValue
+      newRootNode.true_branch = Node(self.catDict, self.classDict)
+      newRootNode.true_branch.nodeClass = mostCommonValue
     else:
       newRootNode.true_branch = self.__id3(partitionEqualGreat, target_attribute, newAttributesSet)
     return newRootNode
@@ -73,7 +66,7 @@ class tree:
         bestAttribute = attr
         bestPartitionLess = partitionLess
         bestPartitionEqualGreat = partitionEqualGreat
-    return bestAttribute, bestThreshold, partitionLess, partitionEqualGreat
+    return bestAttribute, bestThreshold, partitionLess, partitionEqualGreat, bestIG
 
   def __gainAndThreshold(self, examples, attribute):
     # Lets get the possible thresholds
