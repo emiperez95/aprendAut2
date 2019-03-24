@@ -1,4 +1,4 @@
-from tree import tree
+from tree import makeNode
 from node import Node
 import numpy as np
 
@@ -24,10 +24,7 @@ class PoolTree:
             dataArr[i] = np.array(dataArr[i])
 
 
-        self.nodeArr = [] #TODO: sacarle el tipo de clase al nodo y pasarlo a función
-        for data in dataArr:
-            treeObj = tree(data)
-            self.nodeArr.append(treeObj.getNode())
+        self.nodeArr = [makeNode(data) for data in dataArr]
         
     def classify(self, row):
         resArr = []

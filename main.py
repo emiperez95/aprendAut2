@@ -1,5 +1,5 @@
 import numpy as np
-from tree import tree
+from tree import makeNode
 from poolTree import PoolTree
 import random
 
@@ -7,31 +7,30 @@ evaluationData = "data/evaluationData.npy"
 trainingData = "data/trainingData.npy"
 competitionData = "data/competitionData.npy"
 
-ev1Data = "data/evData1.npy"
-ev2Data = "data/evData2.npy"
-ev3Data = "data/evData3.npy"
-
 data = np.load(trainingData)
+evData = np.load(competitionData)
+lenEvData = len(evData)
 
-# # Train models
-# dic = {
-#     0:"Sepal length",
-#     1:"Selap width",
-#     2:"Petal length",
-#     3:"Petal width"
-# }
-# classDic = {
-#     1: "Iris setosa",
-#     2: "Iris versicolour",
-#     3: "Iris virginica"
-# }
-# treeObject = tree(data.astype(float))
+data = data.astype(float)
+evData = evData.astype(float)
 
+# Train models
+model1 = makeNode(data)
+model2 = PoolTree(data, 3)
 
-pTree = PoolTree(data.astype(float), 3)
-
-checkTuple = [5.4, 3.4, 1.7, 0.2]
-res = pTree.classify(checkTuple)
-print(res)
 # Evaluate models
+model1Score = 0
+model2Score = 0
+for row in evData:
+    res = model1.classify(row[:-1])
+    # print("  Respuesta modelo 1: ", res)
+    if res == row[-1]:
+        model1Score += 1
+    
+    res = model2.classify(row[:-1])
+    # print("  Respuesta modelo 2: ", res)
+    if res == row[-1]:
+        model2Score += 1
 
+print("Puntaje del modelo 1: ",model1Score/lenEvData)
+print("Puntaje del modelo 2: ",model2Score/lenEvData)
