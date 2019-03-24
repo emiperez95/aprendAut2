@@ -1,5 +1,5 @@
 
-class node:
+class Node:
     def __init__(self,isLeaf, name, contents = None):
         self.isLeaf = isLeaf
         if isLeaf:
