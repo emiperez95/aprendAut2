@@ -7,9 +7,10 @@ class Tree(object):
       self.false_branch = None
       self.label = None
       self.threshold = None
+      self.value = None
 
   def __str__(self):
-    return '(L: ' + str(self.label) + '  T: ' + str(self.threshold) + '  ' + str(self.false_branch) + '  ' + str(self.true_branch) + ')'
+    return '(L: ' + str(self.label) + '  T: ' + str(self.threshold) + '   V: ' + str(self.value) + '  ' + str(self.false_branch) + '  ' + str(self.true_branch) + ')'
 
 class tree:
   def __init__ (self,trainingData):
@@ -34,13 +35,15 @@ class tree:
     countOfEachClass = self.__countOfEachClass(examples)
     mostCommonValue = max(countOfEachClass, key=lambda item: item[1])[0]
     if (len(countOfEachClass) == 1):
-      newRootNode.label = countOfEachClass[0][1]
+      newRootNode.value = countOfEachClass[0][0]
       return newRootNode
     if (len(attributes) == 0):
-      newRootNode.label = mostCommonValue
+      newRootNode.value = mostCommonValue
       return newRootNode
     bestAttribute, threshold, partitionLess, partitionEqualGreat  = self.__bestFitAttribute(examples, attributes)
     newAttributesSet = list(set(attributes) - {bestAttribute})
+    newRootNode.label = bestAttribute
+    newRootNode.threshold = threshold
     if (len(partitionLess) == 0):
       newRootNode.false_branch = Tree()
       newRootNode.false_branch.label = mostCommonValue
