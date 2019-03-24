@@ -6,9 +6,10 @@ class Tree(object):
       self.true_branch = None
       self.false_branch = None
       self.label = None
+      self.threshold = None
 
   def __str__(self):
-    return self.data + ', ' + str(self.left) + ', ' + str(self.right)
+    return '(', self.data + '), ' + str(self.false_branch) + ', ' + str(self.true_branch)
 
 class tree:
   def __init__ (self,trainingData):
@@ -27,27 +28,30 @@ class tree:
     return entropy
 
   def train(self, data):
-      # minInfoGain = 0
-      # minInfoGainVal = -1
-      # for val,col in enumerate(data.transpose()):
-      #     infoGain = self.clasificarCol(col,clase)
-      #     if minInfoGain < infoGain:
-      #         minInfoGain = infoGain
-      #         minInfoGainVal = val #TODO:
-
-    # print(self.__gainAndThreshold(data, 0))
-      # self.__id3(data, 4, [0,1,2,3])
 
   def __id3(self, examples, target_attribute, attributes):
     newRootNode = Tree()
     countOfEachClass = self.__countOfEachClass(examples)
+    mostCommonValue = max(countOfEachClass, key=lambda item: item[1])[0]
     if (len(countOfEachClass) == 1):
       newRootNode.label = countOfEachClass[0][1]
       return newRootNode
     if (len(attributes) == 0):
-      newRootNode.label = self.__mostCommonValueFor(examples, target_attribute) #TODO:
+      newRootNode.label = mostCommonValue
       return newRootNode
-    bestAttribute, threshold = self.__bestFitAttribute(examples, attributes)
+    bestAttribute, threshold, partitionLess, partitionEqualGreat  = self.__bestFitAttribute(examples, attributes)
+    newAttributesSet = list(set(attributes) - {bestAttribute})
+    if (len(partitionLess) == 0):
+      newRootNode.false_branch = Tree()
+      newRootNode.false_branch.label = mostCommonValue
+    else:
+      newRootNode.false_branch = self.__id3(partitionLess, target_attribute, newAttributesSet)
+    if (len(partitionEqualGreat) == 0):
+      newRootNode.true_branch = Tree()
+      newRootNode.true_branch.label = mostCommonValue
+    else:
+      newRootNode.true_branch = self.__id3(partitionEqualGreat, target_attribute, newAttributesSet)
+    return newRootNode
 
 
   def __bestFitAttribute(self, examples, attributes):
@@ -56,13 +60,15 @@ class tree:
     bestIG = None
     bestThreshold = None
     bestAttribute = None
+    bestPartitionLess = partitionLess
+    bestPartitionEqualGreat = partitionEqualGreat
     for attr in attributes:
-      IG, threshold = self.__gainAndThreshold(examples, attr)
+      IG, threshold, partitionLess, partitionEqualGreat = self.__gainAndThreshold(examples, attr)
       if bestIG == None or bestIG < IG:
         bestIG = IG
         bestThreshold = threshold
         bestAttribute = attr
-    return bestAttribute, threshold
+    return bestAttribute, bestThreshold, partitionLess, partitionEqualGreat
 
   def __gainAndThreshold(self, examples, attribute):
     # Lets get the possible thresholds
@@ -79,9 +85,12 @@ class tree:
     # Lets get the best threshold
     bestThreshold = None
     bestIG = None
+    bestPartitionLess = None
+    bestPartitionEqualGreat = None
+    # Remover duplicados de possibleThresholds
+    possibleThresholds = list(set(possibleThresholds))
     for threshold in possibleThresholds:
       partitionLess, partitionEqualGreat = self.__partition(examples, attribute, threshold)
-
       # H(T)
       TEntropy = self.entropy
 
@@ -94,8 +103,10 @@ class tree:
       if (bestIG == None or bestIG < IG):
         bestThreshold = threshold
         bestIG = IG
+        bestPartitionLess = partitionLess
+        bestPartitionEqualGreat = partitionEqualGreat
 
-    return bestIG, bestThreshold
+    return bestIG, bestThreshold, bestPartitionLess, bestPartitionEqualGreat
 
   def __partition(self, examples, attribute, threshold):
     condArr = examples[:,attribute] < threshold
