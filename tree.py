@@ -9,14 +9,13 @@ class Tree(object):
       self.threshold = None
 
   def __str__(self):
-    return '(', self.data + '), ' + str(self.false_branch) + ', ' + str(self.true_branch)
+    return '(L: ' + str(self.label) + '  T: ' + str(self.threshold) + '  ' + str(self.false_branch) + '  ' + str(self.true_branch) + ')'
 
 class tree:
   def __init__ (self,trainingData):
     self.entropy = float(self.__shannonEntropy(trainingData))
     self.lengthTS = float(len(trainingData))
-
-    self.__id3(trainingData, 4, [0,1,2,3])
+    print(self.__id3(trainingData, 4, [0,1,2,3]))
 
   def __shannonEntropy(self, examples):
     entropy = 0
