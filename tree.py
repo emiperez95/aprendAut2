@@ -16,7 +16,7 @@ class tree:
     self.entropy = float(self.__shannonEntropy(trainingData))
     self.lengthTS = float(len(trainingData))
 
-    self.train(trainingData)
+    self.__id3(trainingData, 4, [0,1,2,3])
 
   def __shannonEntropy(self, examples):
     entropy = 0
@@ -27,7 +27,8 @@ class tree:
       entropy -= Pi*np.log2(Pi)
     return entropy
 
-  def train(self, data):
+  # def train(self, data):
+
 
   def __id3(self, examples, target_attribute, attributes):
     newRootNode = Tree()
@@ -60,14 +61,16 @@ class tree:
     bestIG = None
     bestThreshold = None
     bestAttribute = None
-    bestPartitionLess = partitionLess
-    bestPartitionEqualGreat = partitionEqualGreat
+    bestPartitionLess = None
+    bestPartitionEqualGreat = None
     for attr in attributes:
       IG, threshold, partitionLess, partitionEqualGreat = self.__gainAndThreshold(examples, attr)
       if bestIG == None or bestIG < IG:
         bestIG = IG
         bestThreshold = threshold
         bestAttribute = attr
+        bestPartitionLess = partitionLess
+        bestPartitionEqualGreat = partitionEqualGreat
     return bestAttribute, bestThreshold, partitionLess, partitionEqualGreat
 
   def __gainAndThreshold(self, examples, attribute):
