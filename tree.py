@@ -4,6 +4,15 @@ class tree:
     def __init__ (self,trainingData):
         self.train(trainingData[:,:-1], trainingData[:,-1])
 
+    # ======== Printing ========
+    def __str__(self):
+        
+
+        return "" 
+
+
+    # ======== Training ========
+
     def train(self,data,clase):
         minInfoGain = 0
         minInfoGainVal = -1
