@@ -8,7 +8,10 @@ class tree:
     self.lengthTS = float(len(trainingData))
     self.catDict = catDict
     self.classDict = classDict
-    print(self.__id3(trainingData, 4, [0,1,2,3]))
+    self.node = self.__id3(trainingData, 4, [0,1,2,3])
+
+  def getNode(self):
+    return self.node
 
   def __shannonEntropy(self, examples):
     entropy = 0
@@ -18,9 +21,6 @@ class tree:
       Pi = count[1]/length
       entropy -= Pi*np.log2(Pi)
     return entropy
-
-  # def train(self, data):
-
 
   def __id3(self, examples, target_attribute, attributes):
     newRootNode = Node(self.catDict, self.classDict)
