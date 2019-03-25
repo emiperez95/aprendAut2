@@ -13,7 +13,7 @@ def makeNode (trainingData, catDict = None, classDict = None):
   return __id3(varDict, trainingData, 4, [0,1,2,3])
 
 def __entropy(examples):
-  return __misclassification(examples)
+  return __giniImpurity(examples)
 
 def __shannonEntropy(examples):
   entropy = 0
@@ -42,7 +42,11 @@ def __misclassification(examples):
 def __id3(varDict, examples, target_attribute, attributes):
   newRootNode = Node(varDict["catDict"], varDict["classDict"])
   countOfEachClass = __countOfEachClass(examples)
-  mostCommonValue = max(countOfEachClass, key=lambda item: item[1])[0]
+  mostCommonValue, percentage = __mostCommonValue(countOfEachClass)
+  # Asigno porcentaje y valor mas comun a todos los nodos
+  newRootNode.percentage = percentage
+  newRootNode.mostCommonValue = mostCommonValue
+  newRootNode.countOfEach = countOfEachClass
   if (len(countOfEachClass) == 1):
     newRootNode.nodeClass = countOfEachClass[0][0]
     return newRootNode
@@ -57,15 +61,27 @@ def __id3(varDict, examples, target_attribute, attributes):
   if (len(partitionLess) == 0):
     newRootNode.false_branch = Node(varDict["catDict"], varDict["classDict"])
     newRootNode.false_branch.nodeClass = mostCommonValue
+    newRootNode.false_branch.mostCommonValue = mostCommonValue
+    newRootNode.false_branch.percentage = percentage
+    newRootNode.false_branch.countOfEach = []
   else:
     newRootNode.false_branch = __id3(varDict, partitionLess, target_attribute, newAttributesSet)
   if (len(partitionEqualGreat) == 0):
     newRootNode.true_branch = Node(varDict["catDict"], varDict["classDict"])
     newRootNode.true_branch.nodeClass = mostCommonValue
+    newRootNode.true_branch.mostCommonValue = mostCommonValue
+    newRootNode.true_branch.percentage = percentage
+    newRootNode.true_branch.countOfEach = []
   else:
     newRootNode.true_branch = __id3(varDict, partitionEqualGreat, target_attribute, newAttributesSet)
   return newRootNode
 
+def __mostCommonValue(countOfEachClass):
+  totalCount = 0
+  for elem in countOfEachClass:
+    totalCount += elem[1]
+  maxCount = max(countOfEachClass, key=lambda item: item[1])
+  return maxCount[0], maxCount[1]*100/totalCount
 
 def __bestFitAttribute(varDict, examples, attributes):
   # Si entra aca es porque hay attributes y al menos 2 ejemplos con distinta clase
@@ -124,7 +140,7 @@ def __gainAndThreshold(varDict, examples, attribute):
   return bestIG, bestThreshold, bestPartitionLess, bestPartitionEqualGreat
 
 def __partition(examples, attribute, threshold):
-  condArr = examples[:,attribute] < threshold
+  condArr = examples[:,attribute] <= threshold
   return examples[condArr], examples[~condArr]
 
 def __countOfEachClass(examples):

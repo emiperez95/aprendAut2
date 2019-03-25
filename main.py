@@ -18,6 +18,10 @@ evData = evData.astype(float)
 model1 = makeNode(data)
 model2 = PoolTree(data, 3)
 
+print(model1)
+input("")
+print(model2)
+input("")
 # Evaluate models
 model1Score = 0
 model2Score = 0
@@ -26,7 +30,7 @@ for row in evData:
     # print("  Respuesta modelo 1: ", res)
     if res == row[-1]:
         model1Score += 1
-    
+
     res = model2.classify(row[:-1])
     # print("  Respuesta modelo 2: ", res)
     if res == row[-1]:
