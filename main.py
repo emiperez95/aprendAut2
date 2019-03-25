@@ -15,26 +15,32 @@ data = data.astype(float)
 evData = evData.astype(float)
 
 # Train models
-model1 = makeNode(data)
-model2 = PoolTree(data, 3)
 
-print(model1)
-input("")
-print(model2)
-input("")
-# Evaluate models
-model1Score = 0
-model2Score = 0
-for row in evData:
-    res = model1.classify(row[:-1])
-    # print("  Respuesta modelo 1: ", res)
-    if res == row[-1]:
-        model1Score += 1
+entropyFunc = [0, 1, 2]
+partitionStyle = [True, False]
+classifier = [0, 1]
+for ent in entropyFunc:
+    for part in partitionStyle:
+        for cla in classifier:
+            print("Entrpy func: {}, PartitionStyle: {}, Classifier: {}".format(ent, part, cla))
+            
+            model1 = makeNode(data, part, ent)
+            model2 = PoolTree(data, 3, cla)
 
-    res = model2.classify(row[:-1])
-    # print("  Respuesta modelo 2: ", res)
-    if res == row[-1]:
-        model2Score += 1
+            # Evaluate models
+            model1Score = 0
+            model2Score = 0
+            for row in evData:
+                res = model1.classify(row[:-1])
+                # print("  Respuesta modelo 1: ", res)
+                if res == row[-1]:
+                    model1Score += 1
 
-print("Puntaje del modelo 1: ",model1Score/lenEvData)
-print("Puntaje del modelo 2: ",model2Score/lenEvData)
+                res = model2.classify(row[:-1])
+                # print("  Respuesta modelo 2: ", res)
+                if res == row[-1]:
+                    model2Score += 1
+
+            print("      Modelo 1: ",model1Score/lenEvData)
+            print("      Modelo 2: ",model2Score/lenEvData)
+            print()

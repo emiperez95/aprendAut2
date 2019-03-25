@@ -3,17 +3,30 @@ from functools import reduce
 from node import Node
 
 
-def makeNode (trainingData, catDict = None, classDict = None):
+def makeNode (trainingData, partitionStyle = True, entropyFunc = 0, catDict = None, classDict = None):
+
+  # Partition style: "False" for partition with <, "True" for <= (see __partition() )
+  # entropyFunc: 0 -> shannonEntropy, 1 -> giniImpuruty, 2 -> misclassification.
+
   varDict = {
-    "entropy" : float(__entropy(trainingData)),
+    "entropy" : float(__entropy(trainingData, entropyFunc)),
     "lengthTS" : float(len(trainingData)),
     "catDict" : catDict,
-    "classDict" : classDict
+    "classDict" : classDict,
+    "partitionStyle" : partitionStyle,
+    "entropyFunc" : entropyFunc
   }
   return __id3(varDict, trainingData, 4, [0,1,2,3])
 
-def __entropy(examples):
-  return __giniImpurity(examples)
+def __entropy(examples, entropyFunc):
+  if entropyFunc  == 0:
+    return __shannonEntropy(examples)
+  elif entropyFunc == 1:
+    return __giniImpurity(examples)
+  elif entropyFunc == 2:
+    return __misclassification(examples)
+  else:
+    return __shannonEntropy(examples)
 
 def __shannonEntropy(examples):
   entropy = 0
@@ -121,14 +134,14 @@ def __gainAndThreshold(varDict, examples, attribute):
   # Remover duplicados de possibleThresholds
   possibleThresholds = list(set(possibleThresholds))
   for threshold in possibleThresholds:
-    partitionLess, partitionEqualGreat = __partition(examples, attribute, threshold)
+    partitionLess, partitionEqualGreat = __partition(varDict, examples, attribute, threshold)
     # H(T)
     TEntropy = varDict["entropy"]
 
     # IG(T, a) = H(T) - H(T|a)
     # H(T|a) = para todo v posible de vals(a) SUM((|Sa(v)|/|T|)*H(Sa(v)))
-    HLess = (len(partitionLess)/varDict["lengthTS"])*__entropy(partitionLess)
-    HEqualGreat = (len(partitionEqualGreat)/varDict["lengthTS"])*__entropy(partitionEqualGreat)
+    HLess = (len(partitionLess)/varDict["lengthTS"])*__entropy(partitionLess, varDict["entropyFunc"])
+    HEqualGreat = (len(partitionEqualGreat)/varDict["lengthTS"])*__entropy(partitionEqualGreat, varDict["entropyFunc"])
     IG = TEntropy - HLess - HEqualGreat
 
     if (bestIG == None or bestIG < IG):
@@ -139,8 +152,12 @@ def __gainAndThreshold(varDict, examples, attribute):
 
   return bestIG, bestThreshold, bestPartitionLess, bestPartitionEqualGreat
 
-def __partition(examples, attribute, threshold):
-  condArr = examples[:,attribute] <= threshold
+def __partition(varDict, examples, attribute, threshold):
+  selector = varDict["partitionStyle"]
+  if selector:
+    condArr = examples[:,attribute] <= threshold
+  else:
+    condArr = examples[:,attribute] < threshold
   return examples[condArr], examples[~condArr]
 
 def __countOfEachClass(examples):

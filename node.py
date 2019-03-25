@@ -28,17 +28,28 @@ class Node:
         else:
             return self.true_branch.classify(catDict)
 
+    def classifyPercent(self, catDict):
+        if self.false_branch == None:
+            return self.nodeClass, self.percentage
+        catValue = catDict[self.cat]
+        if catValue < self.threshold:
+            return self.false_branch.classifyPercent(catDict)
+        else:
+            return self.true_branch.classifyPercent(catDict)
+
     # =====Printer=====
     def stringNode(self,n):
+        ROUND = 3
+
         if not self.false_branch == None:
             if self.catDict == None:
-                print("  "*n+"=>", "{} >= {}, Gain: {}".format(self.cat, self.threshold, round(self.gain, 3) if not self.gain == None else "None"), ", MCV: ", self.mostCommonValue, ", P: ", self.percentage, '% --- COE: ', self.countOfEach)
+                print("  "*n+"=>", "{} >= {}, Gain: {}".format(self.cat, round(self.threshold, ROUND), round(self.gain, ROUND) if not self.gain == None else "None"), ", MCV: ", self.mostCommonValue, ", P: ", round(self.percentage, ROUND), '% --- COE: ', self.countOfEach)
             else:
-                print("  "*n+"=>", "{}({}) >= {}, Gain: {}".format(self.catDict[self.cat],self.cat, self.threshold, round(self.gain, 3) if not self.gain == None else "None"), ", MCV: ", self.mostCommonValue, ", P: ", self.percentage, '% --- COE: ', self.countOfEach)
+                print("  "*n+"=>", "{}({}) >= {}, Gain: {}".format(self.catDict[self.cat],self.cat, round(self.threshold, ROUND), round(self.gain, ROUND) if not self.gain == None else "None"), ", MCV: ", self.mostCommonValue, ", P: ", round(self.percentage, ROUND), '% --- COE: ', self.countOfEach)
             self.false_branch.stringNode(n+1)
             self.true_branch.stringNode(n+1)
         else:
             if self.classDict == None:
-                print("  "*n+"=>", "Class: {}".format(self.nodeClass), ", MCV: ", self.mostCommonValue, ", P: ", self.percentage, '% --- COE: ', self.countOfEach)
+                print("  "*n+"=>", "Class: {}".format(self.nodeClass), ", MCV: ", self.mostCommonValue, ", P: ", round(self.percentage, ROUND), '% --- COE: ', self.countOfEach)
             else:
-                print("  "*n+"=>", "Class: {}({})".format(self.classDict[self.nodeClass],self.nodeClass), ", MCV: ", self.mostCommonValue, ", P: ", self.percentage, '% --- COE: ', self.countOfEach)
+                print("  "*n+"=>", "Class: {}({})".format(self.classDict[self.nodeClass],self.nodeClass), ", MCV: ", self.mostCommonValue, ", P: ", round(self.percentage, ROUND), '% --- COE: ', self.countOfEach)
