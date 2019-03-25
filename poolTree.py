@@ -26,6 +26,11 @@ class PoolTree:
 
         self.nodeArr = [makeNode(data) for data in dataArr]
         
+    def __str__(self):
+        for node in self.nodeArr:
+            print(node)
+        return ""
+
     def classify(self, row):
         resArr = []
         for i, node in enumerate(self.nodeArr):
