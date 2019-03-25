@@ -5,12 +5,15 @@ from node import Node
 
 def makeNode (trainingData, catDict = None, classDict = None):
   varDict = {
-    "entropy" : float(__shannonEntropy(trainingData)),
+    "entropy" : float(__entropy(trainingData)),
     "lengthTS" : float(len(trainingData)),
     "catDict" : catDict,
     "classDict" : classDict
   }
   return __id3(varDict, trainingData, 4, [0,1,2,3])
+
+def __entropy(examples):
+  return __misclassification(examples)
 
 def __shannonEntropy(examples):
   entropy = 0
@@ -20,6 +23,21 @@ def __shannonEntropy(examples):
     Pi = count[1]/length
     entropy -= Pi*np.log2(Pi)
   return entropy
+
+def __giniImpurity(examples):
+  impurity = 0
+  length = float(len(examples))
+  counts = __countOfEachClass(examples)
+  for count in counts:
+    Pi = count[1]/length
+    impurity += Pi*(1 - Pi)
+  return impurity
+
+def __misclassification(examples):
+  length = float(len(examples))
+  counts = __countOfEachClass(examples)
+  maxCount = max(counts, key=lambda item: item[1])[1] if len(examples) != 0 else 0
+  return (1 - (maxCount/length)) if length else 1
 
 def __id3(varDict, examples, target_attribute, attributes):
   newRootNode = Node(varDict["catDict"], varDict["classDict"])
@@ -93,8 +111,8 @@ def __gainAndThreshold(varDict, examples, attribute):
 
     # IG(T, a) = H(T) - H(T|a)
     # H(T|a) = para todo v posible de vals(a) SUM((|Sa(v)|/|T|)*H(Sa(v)))
-    HLess = (len(partitionLess)/varDict["lengthTS"])*__shannonEntropy(partitionLess)
-    HEqualGreat = (len(partitionEqualGreat)/varDict["lengthTS"])*__shannonEntropy(partitionEqualGreat)
+    HLess = (len(partitionLess)/varDict["lengthTS"])*__entropy(partitionLess)
+    HEqualGreat = (len(partitionEqualGreat)/varDict["lengthTS"])*__entropy(partitionEqualGreat)
     IG = TEntropy - HLess - HEqualGreat
 
     if (bestIG == None or bestIG < IG):
