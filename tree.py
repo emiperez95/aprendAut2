@@ -1,9 +1,10 @@
 import numpy as np
 from functools import reduce
 from node import Node
+import _thread
 
 
-def makeNode (trainingData, partitionStyle = True, entropyFunc = 0, catDict = None, classDict = None):
+def makeNode (trainingData, catAmm, partitionStyle = True, entropyFunc = 0, catDict = None, classDict = None):
 
   # Partition style: "False" for partition with <, "True" for <= (see __partition() )
   # entropyFunc: 0 -> shannonEntropy, 1 -> giniImpuruty, 2 -> misclassification.
@@ -16,7 +17,9 @@ def makeNode (trainingData, partitionStyle = True, entropyFunc = 0, catDict = No
     "partitionStyle" : partitionStyle,
     "entropyFunc" : entropyFunc
   }
-  return __id3(varDict, trainingData, 4, [0,1,2,3])
+  nodo = Node(varDict["catDict"], varDict["classDict"])
+  __id3(nodo, varDict, trainingData, catAmm, [i for i in range(catAmm-1)])
+  return nodo
 
 def __entropy(examples, entropyFunc):
   if entropyFunc  == 0:
@@ -52,8 +55,8 @@ def __misclassification(examples):
   maxCount = max(counts, key=lambda item: item[1])[1] if len(examples) != 0 else 0
   return (1 - (maxCount/length)) if length else 1
 
-def __id3(varDict, examples, target_attribute, attributes):
-  newRootNode = Node(varDict["catDict"], varDict["classDict"])
+def __id3(newRootNode, varDict, examples, target_attribute, attributes):
+  # newRootNode = Node(varDict["catDict"], varDict["classDict"])
   countOfEachClass = __countOfEachClass(examples)
   mostCommonValue, percentage = __mostCommonValue(countOfEachClass)
   # Asigno porcentaje y valor mas comun a todos los nodos
@@ -78,7 +81,9 @@ def __id3(varDict, examples, target_attribute, attributes):
     newRootNode.false_branch.percentage = percentage
     newRootNode.false_branch.countOfEach = []
   else:
-    newRootNode.false_branch = __id3(varDict, partitionLess, target_attribute, newAttributesSet)
+    newRootNode.false_branch = Node(varDict["catDict"], varDict["classDict"])
+    _thread.start_new_thread(__id3, (newRootNode.false_branch,varDict.copy(), partitionLess.copy(), target_attribute, newAttributesSet.copy()))
+    # __id3(newRootNode.false_branch,varDict, partitionLess, target_attribute, newAttributesSet)
   if (len(partitionEqualGreat) == 0):
     newRootNode.true_branch = Node(varDict["catDict"], varDict["classDict"])
     newRootNode.true_branch.nodeClass = mostCommonValue
@@ -86,7 +91,8 @@ def __id3(varDict, examples, target_attribute, attributes):
     newRootNode.true_branch.percentage = percentage
     newRootNode.true_branch.countOfEach = []
   else:
-    newRootNode.true_branch = __id3(varDict, partitionEqualGreat, target_attribute, newAttributesSet)
+    newRootNode.true_branch = Node(varDict["catDict"], varDict["classDict"])
+    __id3(newRootNode.true_branch, varDict, partitionEqualGreat, target_attribute, newAttributesSet)
   return newRootNode
 
 def __mostCommonValue(countOfEachClass):
