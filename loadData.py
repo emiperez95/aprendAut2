@@ -21,5 +21,6 @@ dataDump = "persist/temp2.th"
 with open(dataDump, 'rb') as fl:
     modelo = pickle.load(fl)
 
+# print(modelo)
 btNode = nodeToBtNode(modelo)
 print(btNode)

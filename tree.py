@@ -1,7 +1,7 @@
 import numpy as np
 from functools import reduce
 from node import Node
-import _thread
+import threading
 
 
 def makeNode (trainingData, catAmm, partitionStyle = True, entropyFunc = 0, catDict = None, classDict = None):
@@ -82,8 +82,9 @@ def __id3(newRootNode, varDict, examples, target_attribute, attributes):
     newRootNode.false_branch.countOfEach = []
   else:
     newRootNode.false_branch = Node(varDict["catDict"], varDict["classDict"])
-    _thread.start_new_thread(__id3, (newRootNode.false_branch,varDict.copy(), partitionLess.copy(), target_attribute, newAttributesSet.copy()))
-    # __id3(newRootNode.false_branch,varDict, partitionLess, target_attribute, newAttributesSet)
+    # th = threading.Thread(target=__id3, args=(newRootNode.false_branch,varDict, partitionLess, target_attribute, newAttributesSet))
+    # th.start()
+    __id3(newRootNode.false_branch,varDict, partitionLess, target_attribute, newAttributesSet)
   if (len(partitionEqualGreat) == 0):
     newRootNode.true_branch = Node(varDict["catDict"], varDict["classDict"])
     newRootNode.true_branch.nodeClass = mostCommonValue
@@ -93,7 +94,9 @@ def __id3(newRootNode, varDict, examples, target_attribute, attributes):
   else:
     newRootNode.true_branch = Node(varDict["catDict"], varDict["classDict"])
     __id3(newRootNode.true_branch, varDict, partitionEqualGreat, target_attribute, newAttributesSet)
-  return newRootNode
+  if not (len(partitionLess) == 0):
+    # th.join()
+    pass
 
 def __mostCommonValue(countOfEachClass):
   totalCount = 0
