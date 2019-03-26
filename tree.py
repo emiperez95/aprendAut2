@@ -3,7 +3,7 @@ from functools import reduce
 from node import Node
 
 
-def makeNode (trainingData, partitionStyle = True, entropyFunc = 0, catDict = None, classDict = None):
+def makeNode (trainingData, catAmm, partitionStyle = True, entropyFunc = 0, catDict = None, classDict = None):
 
   # Partition style: "False" for partition with <, "True" for <= (see __partition() )
   # entropyFunc: 0 -> shannonEntropy, 1 -> giniImpuruty, 2 -> misclassification.
@@ -16,7 +16,7 @@ def makeNode (trainingData, partitionStyle = True, entropyFunc = 0, catDict = No
     "partitionStyle" : partitionStyle,
     "entropyFunc" : entropyFunc
   }
-  return __id3(varDict, trainingData, 4, [0,1,2,3])
+  return __id3(varDict, trainingData, catAmm, [i for i in range(catAmm)])
 
 def __entropy(examples, entropyFunc):
   if entropyFunc  == 0:
