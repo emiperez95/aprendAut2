@@ -134,8 +134,6 @@ def __gainAndThreshold(varDict, examples, attribute):
       possibleThresholds.append((row[attribute] + lastAttrValue)/2)
     lastClass = row[-1]
     lastAttrValue = row[attribute]
-
-  # Lets get the best threshold
   bestThreshold = None
   bestIG = None
   bestPartitionLess = None
@@ -143,22 +141,40 @@ def __gainAndThreshold(varDict, examples, attribute):
   # Remover duplicados de possibleThresholds
   possibleThresholds = list(set(possibleThresholds))
   for threshold in possibleThresholds:
-    partitionLess, partitionEqualGreat = __partition(varDict, examples, attribute, threshold)
-    # H(T)
+    dividerRow = np.argmax(sortedExamples[:,attribute] >= threshold) # TODO: Hacer el if con varDict.selector si funciona bien
+    lessLength = 0
+    equalGreatLength = len(examples) - dividerRow
+    if (dividerRow > 0 or (dividerRow == 0 and examples[0][attribute] < threshold)): # TODO: Lo mismo aca con varDict.selector
+      lessLength = dividerRow
     TEntropy = varDict["entropy"]
 
     # IG(T, a) = H(T) - H(T|a)
     # H(T|a) = para todo v posible de vals(a) SUM((|Sa(v)|/|T|)*H(Sa(v)))
-    HLess = (len(partitionLess)/varDict["lengthTS"])*__entropy(partitionLess, varDict["entropyFunc"])
-    HEqualGreat = (len(partitionEqualGreat)/varDict["lengthTS"])*__entropy(partitionEqualGreat, varDict["entropyFunc"])
+    HLess = (lessLength/len(examples))*__entropy(sortedExamples[:lessLength], varDict["entropyFunc"])
+    HEqualGreat = (equalGreatLength/len(examples))*__entropy(sortedExamples[dividerRow:], varDict["entropyFunc"])
     IG = TEntropy - HLess - HEqualGreat
-
     if (bestIG == None or bestIG < IG):
       bestThreshold = threshold
       bestIG = IG
-      bestPartitionLess = partitionLess
-      bestPartitionEqualGreat = partitionEqualGreat
+      bestPartitionLess = sortedExamples[:lessLength]
+      bestPartitionEqualGreat = sortedExamples[dividerRow:]
 
+    # partitionLess, partitionEqualGreat = __partition(varDict, examples, attribute, threshold)
+    # # H(T)
+    # TEntropy = varDict["entropy"]
+
+    # # IG(T, a) = H(T) - H(T|a)
+    # # H(T|a) = para todo v posible de vals(a) SUM((|Sa(v)|/|T|)*H(Sa(v)))
+    # HLess = (len(partitionLess)/varDict["lengthTS"])*__entropy(partitionLess, varDict["entropyFunc"])
+    # HEqualGreat = (len(partitionEqualGreat)/varDict["lengthTS"])*__entropy(partitionEqualGreat, varDict["entropyFunc"])
+    # IG = TEntropy - HLess - HEqualGreat
+
+    # if (bestIG == None or bestIG < IG):
+    #   bestThreshold = threshold
+    #   bestIG = IG
+    #   bestPartitionLess = partitionLess
+    #   bestPartitionEqualGreat = partitionEqualGreat
+  # print('Time 3 - ', time.time() - sTime)
   return bestIG, bestThreshold, bestPartitionLess, bestPartitionEqualGreat
 
 def __partition(varDict, examples, attribute, threshold):
