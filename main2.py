@@ -27,7 +27,9 @@ lenEvData = len(evData)
 cla = 0
 # model1 = PoolTree(data, 7, 54, cla)
 attTypes = [0 for _ in range(10)] + [1 for _ in range(44)]
-
+attTypesTo2 = [8]
+for att in attTypesTo2:
+    attTypes[att] = 2
 # cnt = counter.Counter()
 
 model1 = makeNode(data, 54, False, 0, attTypes)

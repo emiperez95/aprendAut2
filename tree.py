@@ -171,11 +171,20 @@ def __gainAndThreshold(varDict, examples, attribute):
     HEqualGreat = (equalGreatLength/len(examples))*__entropy(partitionEqualGreat, varDict["entropyFunc"])
     IG = TEntropy - HLess - HEqualGreat
 
-    if catTypeArr[attribute] == 2:
-      lesser = (len(partitionLess)/len(examples))*np.log(len(partitionLess)/len(examples))
-      greater = (len(partitionEqualGreat)/len(examples))*np.log(len(partitionEqualGreat)/len(examples))
+    if catTypeArr[attribute] == 2 and IG != 0:
+      if len(partitionLess) == 0:
+        lesser = 0
+      else:
+        lesser = ( len(partitionLess) / len(examples) ) * np.log( len(partitionLess) / len(examples) )
+      if len(partitionEqualGreat) == 0:
+        greater = 0
+      else:
+        greater = (len(partitionEqualGreat)/len(examples))*np.log(len(partitionEqualGreat)/len(examples))
       splitInfo = -lesser - greater
-      IG = IG / splitInfo
+      
+      if splitInfo != 0:
+        IG = IG / splitInfo
+
     if (bestIG == None or bestIG < IG):
       bestThreshold = threshold
       bestIG = IG
