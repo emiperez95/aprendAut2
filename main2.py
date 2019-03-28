@@ -4,6 +4,7 @@ from poolTree import PoolTree
 import random
 import time
 import pickle
+import counter
 
 start = time.time()
 
@@ -25,8 +26,11 @@ lenEvData = len(evData)
 
 cla = 0
 # model1 = PoolTree(data, 7, 54, cla)
-model1 = makeNode(data, 54, False, 0)
+attTypes = [0 for _ in range(10)] + [1 for _ in range(44)]
 
+# cnt = counter.Counter()
+
+model1 = makeNode(data, 54, False, 0, attTypes)
 
 middle = time.time()
 print("Training time: {}".format(middle-start))

@@ -2,12 +2,17 @@ import numpy as np
 from functools import reduce
 from node import Node
 import threading
+import time as tm
+import counter
 
 
-def makeNode (trainingData, catAmm, partitionStyle = True, entropyFunc = 0, catDict = None, classDict = None):
+def makeNode (trainingData, catAmm, partitionStyle = True, entropyFunc = 0, catTypeArr = None ,catDict = None, classDict = None, counter = None):
 
   # Partition style: "False" for partition with <, "True" for <= (see __partition() )
   # entropyFunc: 0 -> shannonEntropy, 1 -> giniImpuruty, 2 -> misclassification.
+
+  if catTypeArr == None:
+    catTypeArr = [0 for _ in range(catAmm)]
 
   varDict = {
     "entropy" : float(__entropy(trainingData, entropyFunc)),
@@ -15,10 +20,12 @@ def makeNode (trainingData, catAmm, partitionStyle = True, entropyFunc = 0, catD
     "catDict" : catDict,
     "classDict" : classDict,
     "partitionStyle" : partitionStyle,
-    "entropyFunc" : entropyFunc
+    "entropyFunc" : entropyFunc,
+    "catTypeArr" : catTypeArr,
+    "counter" : counter
   }
   nodo = Node(varDict["catDict"], varDict["classDict"])
-  __id3(nodo, varDict, trainingData, catAmm, [i for i in range(catAmm-1)])
+  __id3(nodo, varDict, trainingData, catAmm, [i for i in range(catAmm)])
   return nodo
 
 def __entropy(examples, entropyFunc):
@@ -127,13 +134,21 @@ def __gainAndThreshold(varDict, examples, attribute):
   # Lets get the possible thresholds
   sortedExamples = examples[np.argsort(examples[:,attribute])]
   possibleThresholds = []
-  lastClass = sortedExamples[0][-1]
-  lastAttrValue = sortedExamples[0][attribute]
-  for row in sortedExamples[1:]:
-    if row[-1] != lastClass:
-      possibleThresholds.append((row[attribute] + lastAttrValue)/2)
-    lastClass = row[-1]
-    lastAttrValue = row[attribute]
+  begin = tm.time()
+
+  catTypeArr = varDict["catTypeArr"]
+  if catTypeArr[attribute] == 1:
+    possibleThresholds.append(0.5)
+  else:
+    lastClass = sortedExamples[0][-1]
+    lastAttrValue = sortedExamples[0][attribute]
+    for row in sortedExamples[1:]:
+      if row[-1] != lastClass:
+        possibleThresholds.append((row[attribute] + lastAttrValue)/2)
+      lastClass = row[-1]
+      lastAttrValue = row[attribute]
+
+  # Lets get the best threshold
   bestThreshold = None
   bestIG = None
   bestPartitionLess = None
@@ -150,14 +165,22 @@ def __gainAndThreshold(varDict, examples, attribute):
 
     # IG(T, a) = H(T) - H(T|a)
     # H(T|a) = para todo v posible de vals(a) SUM((|Sa(v)|/|T|)*H(Sa(v)))
-    HLess = (lessLength/len(examples))*__entropy(sortedExamples[:lessLength], varDict["entropyFunc"])
-    HEqualGreat = (equalGreatLength/len(examples))*__entropy(sortedExamples[dividerRow:], varDict["entropyFunc"])
+    partitionLess = sortedExamples[:lessLength]
+    partitionEqualGreat = sortedExamples[dividerRow:]
+    HLess = (lessLength/len(examples))*__entropy(partitionLess, varDict["entropyFunc"])
+    HEqualGreat = (equalGreatLength/len(examples))*__entropy(partitionEqualGreat, varDict["entropyFunc"])
     IG = TEntropy - HLess - HEqualGreat
+
+    if catTypeArr[attribute] == 2:
+      lesser = (len(partitionLess)/len(examples))*np.log(len(partitionLess)/len(examples))
+      greater = (len(partitionEqualGreat)/len(examples))*np.log(len(partitionEqualGreat)/len(examples))
+      splitInfo = -lesser - greater
+      IG = IG / splitInfo
     if (bestIG == None or bestIG < IG):
       bestThreshold = threshold
       bestIG = IG
-      bestPartitionLess = sortedExamples[:lessLength]
-      bestPartitionEqualGreat = sortedExamples[dividerRow:]
+      bestPartitionLess = partitionLess
+      bestPartitionEqualGreat = partitionEqualGreat
 
     # partitionLess, partitionEqualGreat = __partition(varDict, examples, attribute, threshold)
     # # H(T)

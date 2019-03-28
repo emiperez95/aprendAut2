@@ -9,7 +9,7 @@ def nodeToBtNode(nodo):
     if nodo.false_branch == None:
         btNode = bt.Node(nodo.mostCommonValue)
     else:
-        btNode = bt.Node(nodo.percentage)
+        btNode = bt.Node(round(nodo.percentage, 3))
         btNode.left = nodeToBtNode(nodo.true_branch)
         btNode.right = nodeToBtNode(nodo.false_branch)
 
@@ -38,8 +38,8 @@ for ent in entropyFunc:
         for cla in classifier:
             print("Entrpy func: {}, PartitionStyle: {}, Classifier: {}".format(ent, part, cla))
             
-            model1 = makeNode(data, 4, part, ent)
-            model2 = PoolTree(data, 3, 4 , cla)
+            model1 = makeNode(data, 4, part, ent, [0,0,0,0])
+            # model2 = PoolTree(data, 3, 4 , cla)
 
             # Evaluate models
             model1Score = 0
@@ -56,7 +56,7 @@ for ent in entropyFunc:
                 #     model2Score += 1
 
             print("      Modelo 1: ",model1Score/lenEvData)
-            print("      Modelo 2: ",model2Score/lenEvData)
+            # print("      Modelo 2: ",model2Score/lenEvData)
             print(nodeToBtNode(model1))
             print(time.time()-start)
             print()
