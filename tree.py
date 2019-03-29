@@ -1,12 +1,17 @@
 import numpy as np
 from functools import reduce
 from node import Node
+import threading
+import time as tm
+import counter
 
 
-def makeNode (trainingData, partitionStyle = True, entropyFunc = 0, catDict = None, classDict = None):
+def makeNode (trainingData, catAmm, partitionStyle = True, entropyFunc = 0, catTypeArr = None ,catDict = None, classDict = None, counter = None):
 
   # Partition style: "False" for partition with <, "True" for <= (see __partition() )
   # entropyFunc: 0 -> shannonEntropy, 1 -> giniImpuruty, 2 -> misclassification.
+  if catTypeArr == None:
+    catTypeArr = [0 for _ in range(catAmm)]
 
   varDict = {
     "entropy" : float(__entropy(trainingData, entropyFunc)),
@@ -14,9 +19,13 @@ def makeNode (trainingData, partitionStyle = True, entropyFunc = 0, catDict = No
     "catDict" : catDict,
     "classDict" : classDict,
     "partitionStyle" : partitionStyle,
-    "entropyFunc" : entropyFunc
+    "entropyFunc" : entropyFunc,
+    "catTypeArr" : catTypeArr,
+    "counter" : counter
   }
-  return __id3(varDict, trainingData, 4, [0,1,2,3])
+  nodo = Node(varDict["catDict"], varDict["classDict"])
+  __id3(nodo, varDict, trainingData, catAmm, [i for i in range(catAmm)])
+  return nodo
 
 def __entropy(examples, entropyFunc):
   if entropyFunc  == 0:
@@ -34,7 +43,7 @@ def __shannonEntropy(examples):
   counts = __countOfEachClass(examples)
   for count in counts:
     Pi = count[1]/length
-    entropy -= Pi*np.log2(Pi)
+    entropy -= Pi* np.log2(Pi)
   return entropy
 
 def __giniImpurity(examples):
@@ -52,8 +61,8 @@ def __misclassification(examples):
   maxCount = max(counts, key=lambda item: item[1])[1] if len(examples) != 0 else 0
   return (1 - (maxCount/length)) if length else 1
 
-def __id3(varDict, examples, target_attribute, attributes):
-  newRootNode = Node(varDict["catDict"], varDict["classDict"])
+def __id3(newRootNode, varDict, examples, target_attribute, attributes):
+  # newRootNode = Node(varDict["catDict"], varDict["classDict"])
   countOfEachClass = __countOfEachClass(examples)
   mostCommonValue, percentage = __mostCommonValue(countOfEachClass)
   # Asigno porcentaje y valor mas comun a todos los nodos
@@ -78,7 +87,10 @@ def __id3(varDict, examples, target_attribute, attributes):
     newRootNode.false_branch.percentage = percentage
     newRootNode.false_branch.countOfEach = []
   else:
-    newRootNode.false_branch = __id3(varDict, partitionLess, target_attribute, newAttributesSet)
+    newRootNode.false_branch = Node(varDict["catDict"], varDict["classDict"])
+    # th = threading.Thread(target=__id3, args=(newRootNode.false_branch,varDict, partitionLess, target_attribute, newAttributesSet))
+    # th.start()
+    __id3(newRootNode.false_branch,varDict, partitionLess, target_attribute, newAttributesSet)
   if (len(partitionEqualGreat) == 0):
     newRootNode.true_branch = Node(varDict["catDict"], varDict["classDict"])
     newRootNode.true_branch.nodeClass = mostCommonValue
@@ -86,8 +98,11 @@ def __id3(varDict, examples, target_attribute, attributes):
     newRootNode.true_branch.percentage = percentage
     newRootNode.true_branch.countOfEach = []
   else:
-    newRootNode.true_branch = __id3(varDict, partitionEqualGreat, target_attribute, newAttributesSet)
-  return newRootNode
+    newRootNode.true_branch = Node(varDict["catDict"], varDict["classDict"])
+    __id3(newRootNode.true_branch, varDict, partitionEqualGreat, target_attribute, newAttributesSet)
+  if not (len(partitionLess) == 0):
+    # th.join()
+    pass
 
 def __mostCommonValue(countOfEachClass):
   totalCount = 0
@@ -118,13 +133,19 @@ def __gainAndThreshold(varDict, examples, attribute):
   # Lets get the possible thresholds
   sortedExamples = examples[np.argsort(examples[:,attribute])]
   possibleThresholds = []
-  lastClass = sortedExamples[0][-1]
-  lastAttrValue = sortedExamples[0][attribute]
-  for row in sortedExamples[1:]:
-    if row[-1] != lastClass:
-      possibleThresholds.append((row[attribute] + lastAttrValue)/2)
-    lastClass = row[-1]
-    lastAttrValue = row[attribute]
+  begin = tm.time()
+
+  catTypeArr = varDict["catTypeArr"]
+  if catTypeArr[attribute] == 1:
+    possibleThresholds.append(0.5)
+  else:
+    lastClass = sortedExamples[0][-1]
+    lastAttrValue = sortedExamples[0][attribute]
+    for row in sortedExamples[1:]:
+      if row[-1] != lastClass:
+        possibleThresholds.append((row[attribute]))
+      lastClass = row[-1]
+      lastAttrValue = row[attribute]
 
   # Lets get the best threshold
   bestThreshold = None
@@ -134,15 +155,35 @@ def __gainAndThreshold(varDict, examples, attribute):
   # Remover duplicados de possibleThresholds
   possibleThresholds = list(set(possibleThresholds))
   for threshold in possibleThresholds:
-    partitionLess, partitionEqualGreat = __partition(varDict, examples, attribute, threshold)
-    # H(T)
-    TEntropy = varDict["entropy"]
+    dividerRow = np.argmax(sortedExamples[:,attribute] >= threshold) # TODO: Hacer el if con varDict.selector si funciona bien
+    lessLength = 0
+    equalGreatLength = len(examples) - dividerRow
+    if (dividerRow > 0 or (dividerRow == 0 and examples[0][attribute] < threshold)): # TODO: Lo mismo aca con varDict.selector
+      lessLength = dividerRow
+    # TEntropy = varDict["entropy"] #TODO: aca hay que llamar _entropy cada vez
+    TEntropy = __entropy(examples, varDict["entropyFunc"])
 
     # IG(T, a) = H(T) - H(T|a)
     # H(T|a) = para todo v posible de vals(a) SUM((|Sa(v)|/|T|)*H(Sa(v)))
-    HLess = (len(partitionLess)/varDict["lengthTS"])*__entropy(partitionLess, varDict["entropyFunc"])
-    HEqualGreat = (len(partitionEqualGreat)/varDict["lengthTS"])*__entropy(partitionEqualGreat, varDict["entropyFunc"])
+    partitionLess = sortedExamples[:lessLength]
+    partitionEqualGreat = sortedExamples[dividerRow:]
+    HLess = (lessLength/len(examples))*__entropy(partitionLess, varDict["entropyFunc"])
+    HEqualGreat = (equalGreatLength/len(examples))*__entropy(partitionEqualGreat, varDict["entropyFunc"])
     IG = TEntropy - HLess - HEqualGreat
+
+    if catTypeArr[attribute] == 2 and IG != 0:
+      if len(partitionLess) == 0:
+        lesser = 0
+      else:
+        lesser = ( len(partitionLess) / len(examples) ) * np.log( len(partitionLess) / len(examples) )
+      if len(partitionEqualGreat) == 0:
+        greater = 0
+      else:
+        greater = (len(partitionEqualGreat)/len(examples))*np.log(len(partitionEqualGreat)/len(examples))
+      splitInfo = -lesser - greater
+      
+      if splitInfo != 0:
+        IG = IG / splitInfo
 
     if (bestIG == None or bestIG < IG):
       bestThreshold = threshold
@@ -150,6 +191,22 @@ def __gainAndThreshold(varDict, examples, attribute):
       bestPartitionLess = partitionLess
       bestPartitionEqualGreat = partitionEqualGreat
 
+    # partitionLess, partitionEqualGreat = __partition(varDict, examples, attribute, threshold)
+    # # H(T)
+    # TEntropy = varDict["entropy"]
+
+    # # IG(T, a) = H(T) - H(T|a)
+    # # H(T|a) = para todo v posible de vals(a) SUM((|Sa(v)|/|T|)*H(Sa(v)))
+    # HLess = (len(partitionLess)/varDict["lengthTS"])*__entropy(partitionLess, varDict["entropyFunc"])
+    # HEqualGreat = (len(partitionEqualGreat)/varDict["lengthTS"])*__entropy(partitionEqualGreat, varDict["entropyFunc"])
+    # IG = TEntropy - HLess - HEqualGreat
+
+    # if (bestIG == None or bestIG < IG):
+    #   bestThreshold = threshold
+    #   bestIG = IG
+    #   bestPartitionLess = partitionLess
+    #   bestPartitionEqualGreat = partitionEqualGreat
+  # print('Time 3 - ', time.time() - sTime)
   return bestIG, bestThreshold, bestPartitionLess, bestPartitionEqualGreat
 
 def __partition(varDict, examples, attribute, threshold):
