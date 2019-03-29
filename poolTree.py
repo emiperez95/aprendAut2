@@ -4,7 +4,7 @@ import numpy as np
 
 
 class PoolTree:
-    def __init__(self, allData, classCount, catAmm, clasificador = 1): #Suponemos data normalizada
+    def __init__(self, allData, classCount, catAmm, clasificador = 1, partitionStyle = True, entropyFunc = 0, attTypes = None): #Suponemos data normalizada
         self.clasificador = clasificador
 
         dataArr = [[] for _ in range(classCount)]
@@ -23,8 +23,7 @@ class PoolTree:
         for i in range(len(dataArr)):
             dataArr[i] = np.array(dataArr[i])
 
-
-        self.nodeArr = [makeNode(data, catAmm) for data in dataArr]
+        self.nodeArr = [makeNode(data, catAmm, partitionStyle=False, entropyFunc=0, catTypeArr=attTypes) for data in dataArr]
         
     def __str__(self):
         for node in self.nodeArr:
@@ -47,7 +46,7 @@ class PoolTree:
             #Clasificador que toma el primero
             if resArr == []:
                 pass
-            elif len(resArr) > 1: #TODO: debe ser el de mejor porcentaje
+            elif len(resArr) > 1:
                 result = resArr[0][0]
             else:
                 result = resArr[0][0]

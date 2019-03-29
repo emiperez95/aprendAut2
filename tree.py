@@ -10,7 +10,6 @@ def makeNode (trainingData, catAmm, partitionStyle = True, entropyFunc = 0, catT
 
   # Partition style: "False" for partition with <, "True" for <= (see __partition() )
   # entropyFunc: 0 -> shannonEntropy, 1 -> giniImpuruty, 2 -> misclassification.
-
   if catTypeArr == None:
     catTypeArr = [0 for _ in range(catAmm)]
 
@@ -44,7 +43,7 @@ def __shannonEntropy(examples):
   counts = __countOfEachClass(examples)
   for count in counts:
     Pi = count[1]/length
-    entropy -= Pi*np.log2(Pi)
+    entropy -= Pi* np.log2(Pi)
   return entropy
 
 def __giniImpurity(examples):
@@ -144,7 +143,7 @@ def __gainAndThreshold(varDict, examples, attribute):
     lastAttrValue = sortedExamples[0][attribute]
     for row in sortedExamples[1:]:
       if row[-1] != lastClass:
-        possibleThresholds.append((row[attribute] + lastAttrValue)/2)
+        possibleThresholds.append((row[attribute]))
       lastClass = row[-1]
       lastAttrValue = row[attribute]
 
@@ -161,7 +160,8 @@ def __gainAndThreshold(varDict, examples, attribute):
     equalGreatLength = len(examples) - dividerRow
     if (dividerRow > 0 or (dividerRow == 0 and examples[0][attribute] < threshold)): # TODO: Lo mismo aca con varDict.selector
       lessLength = dividerRow
-    TEntropy = varDict["entropy"]
+    # TEntropy = varDict["entropy"] #TODO: aca hay que llamar _entropy cada vez
+    TEntropy = __entropy(examples, varDict["entropyFunc"])
 
     # IG(T, a) = H(T) - H(T|a)
     # H(T|a) = para todo v posible de vals(a) SUM((|Sa(v)|/|T|)*H(Sa(v)))
