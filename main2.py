@@ -11,7 +11,7 @@ from evaluation import Evaluation
     
 
 #=========Vars========
-DATA_LOCATION = "dataSmall"
+DATA_LOCATION = "data2"
 DUMP_SETTINGS = ("persist/", ".th") 
 K_FOLD_PARTITIONS = 6
 CLASS_AMM = 7
@@ -42,7 +42,9 @@ def crossValidationTrain(kFold, data, classAmm, modelType, argv, dumpArgv):
         # con los parametros argv pasados como array.
     # Retorna 3 arrays, los modelos, los tiempos de cada modelo y
         # los resultados de cada modelo
-    kFoldData = kFoldDataGen(np.append(data, evData, 0), kFold)
+    print("Cross")
+
+    kFoldData = kFoldDataGen(data, kFold)
     modelArr = []
     timeArr = []
     resultArr = []
@@ -65,7 +67,7 @@ def crossValidationTrain(kFold, data, classAmm, modelType, argv, dumpArgv):
             model = PoolTree(*argv)
         modelArr.append(model)
         timeArr.append(time.time()-start)
-        dumpDir = dumpArgv[0] + "_RUN_" + str(i) + dumpArgv[1]
+        dumpDir = dumpArgv[0] + "_RUN_" + str(i) + "_{}_{}".format(argv[3],argv[5]) + dumpArgv[1]
         dumpModel(model, dumpDir)
         resultArr.append(Evaluation(model, arrEv, classAmm))
     return modelArr, timeArr, resultArr
@@ -74,7 +76,7 @@ def crossValidationTrain(kFold, data, classAmm, modelType, argv, dumpArgv):
 def normalTrain(data, evData, classAmm, modelType, argv, dumpArgv):
     start = time.time()
     model = makeNode(*argv) if modelType == 0 else PoolTree(*argv)
-    dumpDir = dumpArgv[0] + "_RUN_" + "WHOLE" + dumpArgv[1]
+    dumpDir = dumpArgv[0] + "_RUN_" + "WHOLE" + "_{}_{}".format(argv[3],argv[5]) + dumpArgv[1]
     timer = time.time()-start
     dumpModel(model, dumpDir)
     score = Evaluation(model, evData, classAmm)
@@ -94,12 +96,16 @@ for att in [0, 5]:
     attTypes[att] = 0
         
 
-argvModel1 = [data, 54, True, 0, attTypes]
+threshs = [0.1, 0.01, 0.001, 0.0]
+for th in threshs:
+    argvModel1 = [data, 54, True, 0, attTypes, th]
+    print("Entre ", th)
 
-# model1, timer, score = crossValidationTrain(K_FOLD_PARTITIONS, data, CLASS_AMM, 0, argvModel1, dumpArgv)
-# for b, c in zip(timer, score):
-#     print(" Modelo: {}, time: {}".format(c, b))
+    model1, timer, score = crossValidationTrain(K_FOLD_PARTITIONS, np.append(data, evData,0), CLASS_AMM, 0, argvModel1, dumpArgv)
+    for tm, sc in zip(timer, score):
+        print("Model time: {}".format(tm))
+        sc.normalPrint()
 
-model2, timer2, score2 = normalTrain(data, evData, CLASS_AMM, 0, argvModel1, dumpArgv)
-# print(" Modelo: {}, time: {}".format(score2, timer2))
-score2.normalPrint()
+    model2, timer2, score2 = normalTrain(data, evData, CLASS_AMM, 0, argvModel1, dumpArgv)
+    print("Model time: {}".format(timer2))
+    score2.normalPrint()

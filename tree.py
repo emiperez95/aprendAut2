@@ -6,7 +6,7 @@ import time as tm
 import counter
 
 
-def makeNode (trainingData, catAmm, partitionStyle = True, entropyFunc = 0, catTypeArr = None ,catDict = None, classDict = None, counter = None):
+def makeNode (trainingData, catAmm, partitionStyle = True, entropyFunc = 0, catTypeArr = None, entThresh=0.0 ,catDict = None, classDict = None, counter = None):
   # Partition style: "False" for partition with <, "True" for <= (see __partition() )
   # entropyFunc: 0 -> shannonEntropy, 1 -> giniImpuruty, 2 -> misclassification.
   if catTypeArr == None:
@@ -20,7 +20,8 @@ def makeNode (trainingData, catAmm, partitionStyle = True, entropyFunc = 0, catT
     "partitionStyle" : partitionStyle,
     "entropyFunc" : entropyFunc,
     "catTypeArr" : catTypeArr,
-    "counter" : counter
+    "counter" : counter,
+    "entThresh": entThresh
   }
   nodo = Node(varDict["catDict"], varDict["classDict"])
   __id3(nodo, varDict, trainingData, catAmm, [i for i in range(catAmm)])
@@ -61,7 +62,6 @@ def __misclassification(examples):
   return (1 - (maxCount/length)) if length else 1
 
 def __id3(newRootNode, varDict, examples, target_attribute, attributes):
-  IG_THRESHOLD = 0.001
   # newRootNode = Node(varDict["catDict"], varDict["classDict"])
   countOfEachClass = __countOfEachClass(examples)
   mostCommonValue, percentage = __mostCommonValue(countOfEachClass)
@@ -76,20 +76,21 @@ def __id3(newRootNode, varDict, examples, target_attribute, attributes):
     newRootNode.nodeClass = mostCommonValue
     return newRootNode
   bestAttribute, threshold, partitionLess, partitionEqualGreat, bestIG = __bestFitAttribute(varDict, examples, attributes)
-  if varDict["catTypeArr"][bestAttribute]== 1 or True:
+  if varDict["catTypeArr"][bestAttribute]== 1 or False:
     sonAttr = list(set(attributes) - {bestAttribute})
   else:
     sonAttr = attributes
   newRootNode.cat = bestAttribute
   newRootNode.threshold = threshold
   newRootNode.gain = bestIG
+  newRootNode.nodeClass = mostCommonValue
   # input("===================")
   # print(bestIG, bestAttribute, threshold, len(partitionLess) + len(partitionEqualGreat))
   # print(partitionLess)
   # print(partitionEqualGreat)
 
-  # if bestIG <= IG_THRESHOLD:
-  #   return newRootNode
+  if bestIG <= varDict["entThresh"]:
+    return newRootNode
 
   # print("A==", (len(partitionLess)), (len(partitionEqualGreat)))
   if (len(partitionLess) == 0):
