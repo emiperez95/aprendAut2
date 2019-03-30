@@ -127,7 +127,7 @@ def __bestFitAttribute(varDict, examples, attributes):
       bestAttribute = attr
       bestPartitionLess = partitionLess
       bestPartitionEqualGreat = partitionEqualGreat
-  return bestAttribute, bestThreshold, partitionLess, partitionEqualGreat, bestIG
+  return bestAttribute, bestThreshold, bestPartitionLess, bestPartitionEqualGreat, bestIG
 
 def __gainAndThreshold(varDict, examples, attribute):
   # Lets get the possible thresholds
@@ -181,7 +181,7 @@ def __gainAndThreshold(varDict, examples, attribute):
       else:
         greater = (len(partitionEqualGreat)/len(examples))*np.log(len(partitionEqualGreat)/len(examples))
       splitInfo = -lesser - greater
-      
+
       if splitInfo != 0:
         IG = IG / splitInfo
 
