@@ -6,113 +6,100 @@ import time
 import pickle
 import counter
 from itertools import chain, combinations
+from evaluation import Evaluation
 
+    
+
+#=========Vars========
+DATA_LOCATION = "dataSmall"
+DUMP_SETTINGS = ("persist/", ".th") 
+K_FOLD_PARTITIONS = 6
+CLASS_AMM = 7
+
+##==========AUX_FUNCS=======
 def kFoldDataGen(data,k):
     dataLen = len(data)
     splitArr = [(i+1)*(dataLen//k) for i in range(k-1)]
     return np.split(data, splitArr)
+# return spitData
  
-# def evaluate(model, testData):
-    
+def evaluate(model, testData):
+    score = 0
+    for row in testData:
+        res = model.classify(row[:-1])
+        if res == row[-1]:
+            score += 1
+    return score/len(testData)
+# return score
 
+def dumpModel(model, dir):
+    with open(dir, 'wb') as f:
+        pickle.dump(model, f)
 
-dataLoc = "dataSmall"
+def crossValidationTrain(kFold, data, classAmm, modelType, argv, dumpArgv):
+    # Realiza la cross validation con k = kFOld, para la data = data, 
+        # y con el modelo modelType(0 = makeNode, 1 = nodeTree), 
+        # con los parametros argv pasados como array.
+    # Retorna 3 arrays, los modelos, los tiempos de cada modelo y
+        # los resultados de cada modelo
+    kFoldData = kFoldDataGen(np.append(data, evData, 0), kFold)
+    modelArr = []
+    timeArr = []
+    resultArr = []
+    for i in range(len(kFoldData)):
+        arrEv = []
+        arrTr = []
+        for j, arr in enumerate(kFoldData):
+            if i == j:
+                arrEv = arr
+            else:
+                if len(arrTr) == 0:
+                    arrTr = arr
+                else:
+                    arrTr = np.append(arrTr, arr, 0)
 
-evaluationData = dataLoc+"/evaluationData.npy"
-trainingData = dataLoc+"/trainingData.npy"
-competitionData = dataLoc+"/competitionData.npy"
-dataDump = "persist/temp2.th"
-DUMP_SETTINGS = ("persist/", ".th") 
+        start = time.time()
+        if modelType == 0:
+            model = makeNode(*argv)
+        else:
+            model = PoolTree(*argv)
+        modelArr.append(model)
+        timeArr.append(time.time()-start)
+        dumpDir = dumpArgv[0] + "_RUN_" + str(i) + dumpArgv[1]
+        dumpModel(model, dumpDir)
+        resultArr.append(Evaluation(model, arrEv, classAmm))
+    return modelArr, timeArr, resultArr
+# return [model] [time] [score] 
 
-K_FOLD_PARTITIONS = 6
+def normalTrain(data, evData, classAmm, modelType, argv, dumpArgv):
+    start = time.time()
+    model = makeNode(*argv) if modelType == 0 else PoolTree(*argv)
+    dumpDir = dumpArgv[0] + "_RUN_" + "WHOLE" + dumpArgv[1]
+    timer = time.time()-start
+    dumpModel(model, dumpDir)
+    score = Evaluation(model, evData, classAmm)
+    return model, timer, score
+# return mode, time, score
 
+##=========++++========
+evaluationData = DATA_LOCATION+"/evaluationData.npy"
+trainingData = DATA_LOCATION+"/trainingData.npy"
+competitionData = DATA_LOCATION+"/competitionData.npy"
 data = np.load(trainingData)
 evData = np.load(competitionData)
-lenEvData = len(evData)
-kFoldData = kFoldDataGen(np.append(data, evData, 0), K_FOLD_PARTITIONS)
+dumpArgv = [DUMP_SETTINGS[0] + DATA_LOCATION, DUMP_SETTINGS[1]]
 
-for i in range(len(kFoldData)):
-    arrEv = []
-    arrTr = []
-    for j, arr in enumerate(kFoldData):
-        if i == j:
-            arrEv = arr
-        else:
-            if len(arrTr) == 0:
-                arrTr = arr
-            else:
-                arrTr = np.append(arrTr, arr, 0)
+attTypes = [2 for _ in range(10)] + [1 for _ in range(44)]
+for att in [0, 5]:
+    attTypes[att] = 0
+        
 
-    # Train model
-    # varA = True
-    # varB = 2
-    # model1 = makeNode(data, 54 , varA, varB)
-    # print("Values: {}, {}".format(varA, varB))
+argvModel1 = [data, 54, True, 0, attTypes]
 
-    cla = 0
-    attTypes = [0 for _ in range(10)] + [1 for _ in range(44)]
-    attTypesTo2 = [1, 2, 3, 4, 6, 7, 8, 9]
+# model1, timer, score = crossValidationTrain(K_FOLD_PARTITIONS, data, CLASS_AMM, 0, argvModel1, dumpArgv)
+# for b, c in zip(timer, score):
+#     print(" Modelo: {}, time: {}".format(c, b))
 
-    for att in attTypesTo2:
-        attTypes[att] = 2
-
-    start = time.time()
-
-    print(len(arrTr))
-    print(len(arrEv))
-
-    model1 = makeNode(arrTr, 54, partitionStyle=False, entropyFunc=0, catTypeArr=attTypes)
-    # model1 = PoolTree(data, 7 ,54, partitionStyle=False, entropyFunc=0, clasificador=1, attTypes=attTypes)
-
-    middle = time.time()
-    print("Training time: {}".format(middle-start))
-
-    dataDump = DUMP_SETTINGS[0] + dataLoc + "_RUN_" + str(i) + DUMP_SETTINGS[1]
-    with open(dataDump, 'wb') as f:
-        pickle.dump(model1, f)
-
-    # Evaluate models
-    model1Score = 0
-
-    for row in arrEv:
-        res = model1.classify(row[:-1])
-
-        if res == row[-1]:
-            model1Score += 1
-
-    print(" Modelo {}: {}".format(i, model1Score/lenEvData))
-
-
-
-cla = 0
-attTypes = [0 for _ in range(10)] + [1 for _ in range(44)]
-attTypesTo2 = [1, 2, 3, 4, 6, 7, 8, 9]
-
-for att in attTypesTo2:
-    attTypes[att] = 2
-
-start = time.time()
-
-print(len(data))
-print(len(evData))
-
-model1 = makeNode(data, 54, partitionStyle=False, entropyFunc=0, catTypeArr=attTypes)
-# model1 = PoolTree(data, 7 ,54, partitionStyle=False, entropyFunc=0, clasificador=1, attTypes=attTypes)
-
-middle = time.time()
-print("Training time: {}".format(middle-start))
-
-dataDump = DUMP_SETTINGS[0] + dataLoc + "_RUN_" + str(i) + DUMP_SETTINGS[1]
-with open(dataDump, 'wb') as f:
-    pickle.dump(model1, f)
-
-# Evaluate models
-model1Score = 0
-
-for row in evData:
-    res = model1.classify(row[:-1])
-
-    if res == row[-1]:
-        model1Score += 1
-
-print(" Modelo {}: {}".format(i, model1Score/lenEvData))
+model2, timer2, score2 = normalTrain(data, evData, CLASS_AMM, 0, argvModel1, dumpArgv)
+# print(" Modelo: {}, time: {}".format(score2, timer2))
+score2.normalPrint()
