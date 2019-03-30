@@ -4,7 +4,7 @@ import numpy as np
 
 
 class PoolTree:
-    def __init__(self, allData, classCount, catAmm, clasificador = 1, partitionStyle = True, entropyFunc = 0, attTypes = None): #Suponemos data normalizada
+    def __init__(self, allData, classCount, catAmm, partitionStyle = True, entropyFunc = 0, clasificador = 1, attTypes = None):
         self.clasificador = clasificador
 
         dataArr = [[] for _ in range(classCount)]
