@@ -139,6 +139,10 @@ def __bestFitAttribute(varDict, examples, attributes):
       bestAttribute = attr
       bestPartitionLess = partitionLess
       bestPartitionEqualGreat = partitionEqualGreat
+<<<<<<< HEAD
+=======
+  return bestAttribute, bestThreshold, bestPartitionLess, bestPartitionEqualGreat, bestIG
+>>>>>>> 26d68bd5c21c3f0b66c212d18e07c1f18985b50c
 
   return bestAttribute, bestThreshold, bestPartitionLess, bestPartitionEqualGreat, bestIG
 
@@ -179,7 +183,7 @@ def __gainAndThreshold(varDict, examples, attribute, examplesEntropy):
     # H(T|a) = para todo v posible de vals(a) SUM((|Sa(v)|/|T|)*H(Sa(v)))
     partitionLess = sortedExamples[:lessLength]
     partitionEqualGreat = sortedExamples[dividerRow:]
-    if len(partitionLess) == 0 or len(partitionEqualGreat) == 0:
+    if (len(partitionLess) == 0 or len(partitionEqualGreat) == 0) and varDict["entropyFunc"]!=2:
       # print("Entro para {}".format(attribute))
       IG = 0.0
     else:
