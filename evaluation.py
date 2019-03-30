@@ -7,42 +7,47 @@ class Evaluation:
     self.confussionMatrix = {
       i+1: { it+1:0 for it in range(classAmm) } for i in range(classAmm)
     }
-
+    totalScored = 0
     for elem in testData:
         res = model.classify(elem[:-1])
         self.confussionMatrix[elem[-1]][res] += 1
- 
+        if res == elem[-1]:
+          totalScored += 1
+    self.totalPrecisionPercentage = totalScored*100/len(testData)
+
   def __str__(self):
     return str(self.confussionMatrix)
 
   def normalPrint(self):
+    print("Total precision percentage: ", self.totalPrecisionPercentage)
+    print("Confussion Matrix: ")
     print('|-|', end="")
     for i in range(self.classAmm):
       print(i+1, " |", end="")
     print()
-  
+
     print('|---:|', end="")
     for i in range(self.classAmm):
       print('---:|', end="")
     print()
-  
+
     for row in self.confussionMatrix:
       print('|', row, ' |', end='')
       for col in self.confussionMatrix[row]:
         print(self.confussionMatrix[row][col], '|', end="")
-      print()    
+      print()
 
   def prettyPrintRes(self, classNameDict):
     print('|-|', end="")
     for i in range(len(classNameDict)):
       print(classNameDict[i+1], "|", end="")
     print()
-  
+
     print('|---:|', end="")
     for i in range(len(classNameDict)):
       print('---:|', end="")
     print()
-  
+
     for row in self.confussionMatrix:
       print('|', classNameDict[row], '|', end='')
       for col in self.confussionMatrix[row]:
@@ -51,16 +56,16 @@ class Evaluation:
 
 def isLeaf(root):
   return not root.false_branch and not root.true_branch
- 
+
 def MCV(root):
   return root.mostCommonValue
- 
+
 def cleanTree(root):
   if (isLeaf(root)):
     return root
   root.false_branch = cleanTree(root.false_branch)
   root.true_branch = cleanTree(root.true_branch)
- 
+
   if (isLeaf(root.false_branch) and isLeaf(root.true_branch)):
     if (
       root.percentage == root.false_branch.percentage == root.true_branch.percentage

@@ -1,6 +1,7 @@
 import numpy as np
 from tree import makeNode
 from poolTree import PoolTree
+from metrics import matrizConfusion
 import random
 import binarytree as bt
 import time
@@ -12,8 +13,17 @@ def nodeToBtNode(nodo):
         btNode = bt.Node(nodo.cat)
         btNode.left = nodeToBtNode(nodo.true_branch)
         btNode.right = nodeToBtNode(nodo.false_branch)
-
     return btNode
+
+def makeSimpleTree(metric):
+    if metric == 'entropy':
+        tree = makeNode(data, 4, False, 0, [0,0,0,0])
+    elif metric == 'gini':
+        tree = makeNode(data, 4, False, 1, [0,0,0,0])
+    elif metric == 'misclassification':
+        tree = makeNode(data, 4, False, 2, [0,0,0,0])
+    print(tree)
+    print(nodeToBtNode(tree))
 
 evaluationData = "data/evaluationData.npy"
 trainingData = "data/trainingData.npy"
@@ -29,6 +39,13 @@ evData = evData.astype(float)
 start = time.time()
 
 # Train models
+
+
+classNameDict = {
+    1: 'Iris Setosa',
+    2: 'Iris Versicolour',
+    3: 'Iris Virginica',
+}
 
 entropyFunc = [0, 1, 2]
 partitionStyle = [True, False] #Model1
