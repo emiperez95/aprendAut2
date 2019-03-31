@@ -149,7 +149,7 @@ def __gainAndThreshold(varDict, examples, attribute, examplesEntropy):
     lastAttrValue = sortedExamples[0][attribute]
     for row in sortedExamples[1:]:
       if row[-1] != lastClass:
-        possibleThresholds.append((row[attribute]))
+        possibleThresholds.append((row[attribute]+lastAttrValue)/2)
       lastClass = row[-1]
       lastAttrValue = row[attribute]
 
