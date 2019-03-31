@@ -31,7 +31,7 @@ class Evaluation:
           falseNeg += row[j+1]
       resArr.append((truePos, falseNeg))
     return resArr
-    
+
   def __getPrecArr(self):
     resArr = []
     for i in range(self.classAmm):
@@ -79,7 +79,10 @@ class Evaluation:
     macroFscore = 2*macroPrecision*macroRecal / (macroPrecision + macroRecal)
 
     return microPrecision, microRecal, microFscore, macroPrecision, macroRecal, macroFscore
-    
+
+  def getFscore(self):
+    return self.microFscore, self.macroFscore
+
   def printStats(self):
     microPrecision, microRecal, microFscore, macroPrecision, macroRecal, macroFscore = self.getStats()
     table_data = [
@@ -93,7 +96,7 @@ class Evaluation:
   def printMkdownStats(self):
       microPrecision, microRecal, microFscore, macroPrecision, macroRecal, macroFscore = self.getStats()
       table_data = [
-        ["|-", "|Prec", "|Rec", "|Fs |"],
+        ["\n\n|-", "|Prec", "|Rec", "|Fs |"],
         ["|---:","|---:","|---:","|---:|"],
         ["|Micro", "|"+str(round(microPrecision, 3)), "|"+str(round(microRecal, 3)), "|"+str(round(microFscore, 3))+"|"],
         ["|Macro", "|"+str(round(macroPrecision, 3)), "|"+str(round(macroRecal, 3)), "|"+str(round(macroFscore, 3))+"|"]
@@ -127,7 +130,7 @@ class Evaluation:
       print()
 
   def prettyPrintRes(self, classNameDict):
-    print('|-|', end="")
+    print("|-|", end="")
     for i in range(len(classNameDict)):
       print(classNameDict[i+1], "|", end="")
     print()

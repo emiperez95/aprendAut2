@@ -8,7 +8,7 @@ import counter
 from itertools import chain, combinations
 from evaluation import Evaluation
 
-    
+
 
 #=========Vars========
 DATA_LOCATION = "data/"
@@ -22,7 +22,7 @@ def kFoldDataGen(data,k):
     splitArr = [(i+1)*(dataLen//k) for i in range(k-1)]
     return np.split(data, splitArr)
 # return spitData
- 
+
 def evaluate(model, testData):
     score = 0
     for row in testData:
@@ -37,8 +37,8 @@ def dumpModel(model, dir):
         pickle.dump(model, f)
 
 def crossValidationTrain(kFold, data, classAmm, modelType, argv, dumpArgv):
-    # Realiza la cross validation con k = kFOld, para la data = data, 
-        # y con el modelo modelType(0 = makeNode, 1 = nodeTree), 
+    # Realiza la cross validation con k = kFOld, para la data = data,
+        # y con el modelo modelType(0 = makeNode, 1 = nodeTree),
         # con los parametros argv pasados como array.
     # Retorna 3 arrays, los modelos, los tiempos de cada modelo y
         # los resultados de cada modelo

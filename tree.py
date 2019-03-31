@@ -171,7 +171,7 @@ def __gainAndThreshold(varDict, examples, attribute, examplesEntropy):
       lessLength = dividerRow
     partitionLess = sortedExamples[:lessLength]
     partitionEqualGreat = sortedExamples[dividerRow:]
-    if (len(partitionLess) == 0 or len(partitionEqualGreat) == 0) and varDict["entropyFunc"]!=2:
+    if (len(partitionLess) == 0 or len(partitionEqualGreat) == 0) and varDict["entropyFunc"]!=2 and False:
       IG = 0.0
     else:
       HLess = (lessLength/len(examples))*__entropy(partitionLess, varDict["entropyFunc"])
