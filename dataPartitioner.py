@@ -49,12 +49,3 @@ np.save(competitionPath, competitionData)
 np.save(evaluationPath, evaluationData)
 
 print("Termine todo :) ")
-
-# data = np.load(trainingData)
-# evData = np.load(competitionData)
-# lenEvData = len(evData)
-
-# data = data.astype(float)
-# evData = evData.astype(float)
-
-# Train models

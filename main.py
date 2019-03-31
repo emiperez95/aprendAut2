@@ -1,10 +1,10 @@
 import numpy as np
 from tree import makeNode
 from poolTree import PoolTree
-from metrics import matrizConfusion
 import random
 import binarytree as bt
 import time
+from evaluation import Evaluation
 
 def nodeToBtNode(nodo):
     if nodo.false_branch == None:
@@ -47,34 +47,38 @@ classNameDict = {
     3: 'Iris Virginica',
 }
 
-entropyFunc = [0, 1, 2]
-partitionStyle = [True, False] #Model1
-classifier = [0, 1] #Model2
-for ent in entropyFunc:
-    print()
-    print("Entropy func: {} = ".format(ent), end="")
-    for part, cla in zip(partitionStyle, classifier):
-        model1 = makeNode(data, 4, part, ent, [0,0,0,0])
-        model2 = PoolTree(data, 3, 4 , cla)
+model1 = makeNode(data, 4, False, 1, [0,0,0,0])
+eval = Evaluation(model1, evData, 3)
+eval.normalPrint()
 
-        # Evaluate models
-        model1Score = 0
-        model2Score = 0
-        for row in evData:
-            res = model1.classify(row[:-1])
-            # print("  Respuesta modelo 1: ", res)
-            if res == row[-1]:
-                model1Score += 1
+# entropyFunc = [0, 1, 2]
+# partitionStyle = [True, False] #Model1
+# classifier = [0, 1] #Model2
+# for ent in entropyFunc:
+#     print()
+#     print("Entropy func: {} = ".format(ent), end="")
+#     for part, cla in zip(partitionStyle, classifier):
+#         model1 = makeNode(data, 4, part, ent, [0,0,0,0])
+#         model2 = PoolTree(data, 3, 4 , cla)
 
-            res = model2.classify(row[:-1])
-            # print("  Respuesta modelo 2: ", res)
-            if res == row[-1]:
-                model2Score += 1
+#         # Evaluate models
+#         model1Score = 0
+#         model2Score = 0
+#         for row in evData:
+#             res = model1.classify(row[:-1])
+#             # print("  Respuesta modelo 1: ", res)
+#             if res == row[-1]:
+#                 model1Score += 1
 
-        # print("PartitionStyle: {}, Classifier: {}".format(part, cla))
-        # print("      Modelo 1: {}, part {}".format(model1Score/lenEvData, part))
-        # print("      Modelo 2: {}, clas {}".format(model2Score/lenEvData, cla))
-        print(" 1:{} - 2:{} =".format(model1Score/lenEvData, model2Score/lenEvData), end="")
-        # print(nodeToBtNode(model1))
-        # print(time.time()-start)
-        # print()
+#             res = model2.classify(row[:-1])
+#             # print("  Respuesta modelo 2: ", res)
+#             if res == row[-1]:
+#                 model2Score += 1
+
+#         # print("PartitionStyle: {}, Classifier: {}".format(part, cla))
+#         # print("      Modelo 1: {}, part {}".format(model1Score/lenEvData, part))
+#         # print("      Modelo 2: {}, clas {}".format(model2Score/lenEvData, cla))
+#         print(" 1:{} - 2:{} =".format(model1Score/lenEvData, model2Score/lenEvData), end="")
+#         # print(nodeToBtNode(model1))
+#         # print(time.time()-start)
+#         # print()

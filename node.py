@@ -19,6 +19,7 @@ class Node:
         self.stringNode(0)
         return ""
 
+    # =====Classifiers======
     def classify(self, catDict):
         if self.false_branch == None:
             return self.nodeClass
@@ -37,7 +38,7 @@ class Node:
         else:
             return self.true_branch.classifyPercent(catDict)
 
-    # =====Printer=====
+    # =====Printers=====
     def stringNode(self,n):
         ROUND = 3
 

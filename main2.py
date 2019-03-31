@@ -11,9 +11,9 @@ from evaluation import Evaluation
     
 
 #=========Vars========
-DATA_LOCATION = "data2"
+DATA_LOCATION = "dataSmall"
 DUMP_SETTINGS = ("persist/", ".th") 
-K_FOLD_PARTITIONS = 6
+K_FOLD_PARTITIONS = 5
 CLASS_AMM = 7
 
 ##==========AUX_FUNCS=======
@@ -83,7 +83,7 @@ def normalTrain(data, evData, classAmm, modelType, argv, dumpArgv):
     return model, timer, score
 # return mode, time, score
 
-##=========++++========
+##=========MAIN CODE========
 evaluationData = DATA_LOCATION+"/evaluationData.npy"
 trainingData = DATA_LOCATION+"/trainingData.npy"
 competitionData = DATA_LOCATION+"/competitionData.npy"
@@ -96,7 +96,10 @@ for att in [0, 5]:
     attTypes[att] = 0
         
 
-threshs = [0.1, 0.01, 0.001, 0.0]
+threshs = [0.2 , 0.1, 0.01, 0.001, 0.0001, 0.0]
+folds = [5, 6, 7, 8, 9, 10]
+funcs = []
+
 for th in threshs:
     argvModel1 = [data, 54, True, 0, attTypes, th]
     print("Entre ", th)

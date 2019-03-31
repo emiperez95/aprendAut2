@@ -18,8 +18,92 @@ class Evaluation:
   def __str__(self):
     return str(self.confussionMatrix)
 
+  def __getRecArr(self):
+    resArr = []
+    for i in range(self.classAmm):
+      row = self.confussionMatrix[i+1]
+      truePos = 0
+      falseNeg = 0
+      for j in range(self.classAmm):
+        if i == j:
+          truePos = row[j+1]
+        else:
+          falseNeg += row[j+1]
+      resArr.append((truePos, falseNeg))
+    return resArr
+    
+  def __getPrecArr(self):
+    resArr = []
+    for i in range(self.classAmm):
+      truePos = 0
+      falsePos = 0
+      for j in range(self.classAmm):
+        if i == j:
+          truePos = self.confussionMatrix[j+1][i+1]
+        else:
+          falsePos += self.confussionMatrix[j+1][i+1]
+      resArr.append((truePos, falsePos))
+    return resArr
+
+  def getStats(self):
+    precArr = self.__getPrecArr()
+    recArr = self.__getRecArr()
+    # Micro
+    truePosSum = 0
+    falsePosSum = 0
+    falseNegSum = 0
+
+    for i, elem in enumerate(precArr):
+      truePosSum += elem[0]
+      falsePosSum += elem[1]
+      falseNegSum += recArr[i][1]
+    microPrecision = truePosSum / (truePosSum+falsePosSum)
+    microRecal = truePosSum / (truePosSum + falseNegSum)
+    microFscore = 2*microPrecision*microRecal / (microPrecision + microRecal)
+
+    # Macro
+    precResSum = 0
+    recResSum = 0
+    for i, elem in enumerate(precArr):
+      precRes = elem[0] / (elem[0] + elem[1])
+      precResSum += precRes
+      recRes = recArr[i][0] / (recArr[i][0] + recArr[i][1])
+      recResSum += recRes
+    macroPrecision = precResSum / self.classAmm
+    macroRecal = recResSum / self.classAmm
+    macroFscore = 2*macroPrecision*macroRecal / (macroPrecision + macroRecal)
+
+    return microPrecision, microRecal, microFscore, macroPrecision, macroRecal, macroFscore
+    
+  def printStats(self):
+    microPrecision, microRecal, microFscore, macroPrecision, macroRecal, macroFscore = self.getStats()
+    table_data = [
+      ["", "Prec", "Rec", "Fs"],
+      ["Micro", round(microPrecision, 3), round(microRecal, 3), round(microFscore, 3)],
+      ["Macro", round(macroPrecision, 3), round(macroRecal, 3), round(macroFscore, 3)]
+    ]
+    for row in table_data:
+      print("{: >7} {: >8} {: >8} {: >8}".format(*row))
+
+  def printMkdownStats(self):
+      microPrecision, microRecal, microFscore, macroPrecision, macroRecal, macroFscore = self.getStats()
+      table_data = [
+        ["|-", "|Prec", "|Rec", "|Fs |"],
+        ["|---:","|---:","|---:","|---:|"],
+        ["|Micro", "|"+str(round(microPrecision, 3)), "|"+str(round(microRecal, 3)), "|"+str(round(microFscore, 3))+"|"],
+        ["|Macro", "|"+str(round(macroPrecision, 3)), "|"+str(round(macroRecal, 3)), "|"+str(round(macroFscore, 3))+"|"]
+      ]
+      for row in table_data:
+        print("{} {} {} {}".format(*row))
+
   def normalPrint(self):
     print("Total precision percentage: ", self.totalPrecisionPercentage)
+    print()
+    self.printStats()
+    print()
+    self.confMatrix()
+
+  def confMatrix(self):
     print("Confussion Matrix: ")
     print('|-|', end="")
     for i in range(self.classAmm):

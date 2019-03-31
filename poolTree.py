@@ -4,8 +4,7 @@ import numpy as np
 
 
 class PoolTree:
-    def __init__(self, allData, classCount, catAmm, partitionStyle = True, entropyFunc = 0, clasificador = 1, attTypes = None):
-        self.clasificador = clasificador
+    def __init__(self, allData, classCount, catAmm, partitionStyle = True, entropyFunc = 0, attTypes = None):
 
         dataArr = [[] for _ in range(classCount)]
         for row in allData:
@@ -41,35 +40,25 @@ class PoolTree:
                 elseArr.append((i, percent))
         
         result = 1
-
-        if self.clasificador == 0:
-            #Clasificador que toma el primero
-            if resArr == []:
-                pass
-            elif len(resArr) > 1:
-                result = resArr[0][0]
-            else:
-                result = resArr[0][0]
+        #Clasificador con porcentajes
+        if resArr == []:
+            minRes = elseArr[0][0]
+            minResVal = elseArr[0][1]
+            for a in elseArr[1:]:
+                if a[1] < minResVal:
+                    minResVal = a[1]
+                    minRes = a[0]
+            result = minRes
+        elif len(resArr) > 1:
+            maxRes = resArr[0][0]
+            maxResVal = resArr[0][1]
+            for a in resArr[1:]:
+                if a[1] > maxResVal:
+                    maxResVal = a[1]
+                    maxRes = a[0]
+            result = maxRes
         else:
-            #Clasificador con porcentajes
-            if resArr == []:
-                minRes = elseArr[0][0]
-                minResVal = elseArr[0][1]
-                for a in elseArr[1:]:
-                    if a[1] < minResVal:
-                        minResVal = a[1]
-                        minRes = a[0]
-                result = minRes
-            elif len(resArr) > 1:
-                maxRes = resArr[0][0]
-                maxResVal = resArr[0][1]
-                for a in resArr[1:]:
-                    if a[1] > maxResVal:
-                        maxResVal = a[1]
-                        maxRes = a[0]
-                result = maxRes
-            else:
-                result = resArr[0][0]
+            result = resArr[0][0]
         return result + 1
         
 
