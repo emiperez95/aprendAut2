@@ -2,20 +2,38 @@ import numpy as np
 from tree import makeNode
 from poolTree import PoolTree
 import random
+import os
 
 
-ogData = "data2/covtype.data"
+# Si se desea utilizar una semilla 'aletoria', comentar las dos siguientes lineas
+RANDOM_SEED = 123123
+random.seed(RANDOM_SEED)
 
-trainingPath = "dataSuperSmall/trainingData.npy"
-competitionPath = "dataSuperSmall/competitionData.npy"
-evaluationPath = "dataSuperSmall/evaluationData.npy"
 
-dataAmm = 5000
-trainingAmm = round(dataAmm*0.6)+1
-competitionAmm = evaluationAmm = round((dataAmm - trainingAmm)/2)
+# +=======================CREACION DE DIRECTORIOS
+print("Creando las carpetas", end='')
+folders = ["500k", "50k", "5k"]
+sizes = [500000, 50000, 5000]
 
+for f in folders:
+    path = "./data/"+f
+    try:
+        os.mkdir(path)
+    except OSError:  
+        print ("La creación del directorio %s fallo" % path)
+    else:
+        print('.', end='')
+
+evPath = "data/evaDataCover.npy"
+compPath = "data/compDataCover.npy"
+trainPath = "/trainingData.npy"
+
+
+# +======================= LECTURA DE DATOS
+print("Leyendo datos...")
+sourceData = "data/covtype.data"
 allData = []
-with open(ogData) as fl:
+with open(sourceData) as fl:
     for f in fl:
         if not f == "":  
             row = f.split(",")
@@ -24,28 +42,33 @@ with open(ogData) as fl:
             allData.append(npRow.astype(float))
 
 
-print("Termine de leer")
-
+# +======================= RANDOMIZACIÓN
+print("Randomizando datos...")
 random.shuffle(allData)
 
-print("Termine el shuffle")
 
-trainingData = []
+# =================Division de datos
+print("Dividiendo los datos", end='')
+fullSize = 581012
+partitionSize = round(fullSize*0.2)
+
 competitionData = []
 evaluationData = []
 
-for i, row in enumerate(allData):
-    if i < trainingAmm:
-        trainingData.append(row)
-    elif i < trainingAmm + competitionAmm:
-        competitionData.append(row)
-    else:
-        evaluationData.append(row)
+for i in range(partitionSize):
+    competitionData.append(allData[i*2])
+    evaluationData.append(allData[(i*2)+1])
+np.save(evPath, evaluationData)
+np.save(compPath, competitionData)
 
-print("Particione la data")
+print('.',end='')
 
-np.save(trainingPath, trainingData)
-np.save(competitionPath, competitionData)
-np.save(evaluationPath, evaluationData)
+for folder, size in zip(folders, sizes):
 
-print("Termine todo :) ")
+    trainingData = []
+    minVal = min(fullSize, partitionSize*2+size)
+    for i in range(partitionSize*2, minVal):
+        trainingData.append(allData[i])
+    np.save("./data/"+folder+trainPath, trainingData)
+    print('.',end='')
+print()

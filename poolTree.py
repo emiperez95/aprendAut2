@@ -4,8 +4,8 @@ import numpy as np
 
 
 class PoolTree:
-    def __init__(self, allData, classCount, catAmm, partitionStyle = True, entropyFunc = 0, attTypes = None):
-
+    def __init__(self, allData, classCount, catAmm, partitionStyle = True, entropyFunc = 0, attTypes = None, repetition = 0, entThresh=0.0):
+        self.time = None
         dataArr = [[] for _ in range(classCount)]
         for row in allData:
             rowClass = row[-1] -1
@@ -22,7 +22,7 @@ class PoolTree:
         for i in range(len(dataArr)):
             dataArr[i] = np.array(dataArr[i])
 
-        self.nodeArr = [makeNode(data, catAmm, partitionStyle=False, entropyFunc=0, catTypeArr=attTypes) for data in dataArr]
+        self.nodeArr = [makeNode(data, catAmm, partitionStyle=False, entropyFunc=0, catTypeArr=attTypes, repetition = repetition, entThresh = entThresh) for data in dataArr]
         
     def __str__(self):
         for node in self.nodeArr:
@@ -61,4 +61,5 @@ class PoolTree:
             result = resArr[0][0]
         return result + 1
         
-
+    def setTime(self, time):
+        self.time = time

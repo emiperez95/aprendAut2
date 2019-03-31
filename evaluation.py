@@ -65,8 +65,13 @@ class Evaluation:
     precResSum = 0
     recResSum = 0
     for i, elem in enumerate(precArr):
-      precRes = elem[0] / (elem[0] + elem[1])
-      precResSum += precRes
+      # self.confMatrix()
+      # input("")
+      if (elem[0] + elem[1]) == 0:
+        precResSum += 0
+      else:
+        precRes = elem[0] / (elem[0] + elem[1])
+        precResSum += precRes
       recRes = recArr[i][0] / (recArr[i][0] + recArr[i][1])
       recResSum += recRes
     macroPrecision = precResSum / self.classAmm

@@ -14,6 +14,7 @@ class Node:
         self.countOfEach = None
         self.catDict = catDict
         self.classDict = classDict
+        self.time = None
 
     def __str__(self):
         self.stringNode(0)
@@ -54,3 +55,6 @@ class Node:
                 print(" "*n+"->", "Class: {}".format(self.nodeClass), ", MCV: ", self.mostCommonValue, ", P: ", round(self.percentage, ROUND), '% --- COE: ', self.countOfEach)
             else:
                 print(" "*n+"->", "Class: {}({})".format(self.classDict[self.nodeClass],self.nodeClass), ", MCV: ", self.mostCommonValue, ", P: ", round(self.percentage, ROUND), '% --- COE: ', self.countOfEach)
+
+    def setTime(self, time):
+        self.time = time

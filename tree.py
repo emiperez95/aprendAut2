@@ -6,7 +6,7 @@ import time as tm
 import counter
 
 
-def makeNode (trainingData, catAmm, partitionStyle = False, entropyFunc = 0, catTypeArr = None, entThresh=0.01 ,catDict = None, classDict = None, counter = None):
+def makeNode (trainingData, catAmm, partitionStyle = True, entropyFunc = 0, catTypeArr = None, repetition = 0, entThresh=0.0, catDict = None, classDict = None, counter = None):
   # Partition style: "False" for partition with <, "True" for <= (see __partition() )
   # entropyFunc: 0 -> shannonEntropy, 1 -> giniImpuruty, 2 -> misclassification.
   if catTypeArr == None:
@@ -21,7 +21,8 @@ def makeNode (trainingData, catAmm, partitionStyle = False, entropyFunc = 0, cat
     "entropyFunc" : entropyFunc,
     "catTypeArr" : catTypeArr,
     "counter" : counter,
-    "entThresh": entThresh
+    "entThresh": entThresh,
+    "repetition" : repetition
   }
   nodo = Node(varDict["catDict"], varDict["classDict"])
   __id3(nodo, varDict, trainingData, catAmm, [i for i in range(catAmm)])
@@ -76,7 +77,7 @@ def __id3(newRootNode, varDict, examples, target_attribute, attributes):
     newRootNode.nodeClass = mostCommonValue
     return newRootNode
   bestAttribute, threshold, partitionLess, partitionEqualGreat, bestIG = __bestFitAttribute(varDict, examples, attributes)
-  if varDict["catTypeArr"][bestAttribute]== 1 or False:
+  if varDict["catTypeArr"][bestAttribute]== 1 or varDict["repetition"] == 0:
     sonAttr = list(set(attributes) - {bestAttribute})
   else:
     sonAttr = attributes
@@ -85,8 +86,9 @@ def __id3(newRootNode, varDict, examples, target_attribute, attributes):
   newRootNode.gain = bestIG
   newRootNode.nodeClass = mostCommonValue
 
-  if bestIG <= varDict["entThresh"]:
-    return newRootNode
+  if varDict["repetition"] == 1:
+    if bestIG <= varDict["entThresh"]:
+      return newRootNode
 
   if (len(partitionLess) == 0):
     newRootNode.false_branch = Node(varDict["catDict"], varDict["classDict"])
