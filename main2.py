@@ -8,11 +8,11 @@ import counter
 from itertools import chain, combinations
 from evaluation import Evaluation
 
-    
+
 
 #=========Vars========
-DATA_LOCATION = "dataSmall"
-DUMP_SETTINGS = ("persist/", ".th") 
+DATA_LOCATION = "data5000"
+DUMP_SETTINGS = ("persist/", ".th")
 K_FOLD_PARTITIONS = 5
 CLASS_AMM = 7
 
@@ -22,7 +22,7 @@ def kFoldDataGen(data,k):
     splitArr = [(i+1)*(dataLen//k) for i in range(k-1)]
     return np.split(data, splitArr)
 # return spitData
- 
+
 def evaluate(model, testData):
     score = 0
     for row in testData:
@@ -37,8 +37,8 @@ def dumpModel(model, dir):
         pickle.dump(model, f)
 
 def crossValidationTrain(kFold, data, classAmm, modelType, argv, dumpArgv):
-    # Realiza la cross validation con k = kFOld, para la data = data, 
-        # y con el modelo modelType(0 = makeNode, 1 = nodeTree), 
+    # Realiza la cross validation con k = kFOld, para la data = data,
+        # y con el modelo modelType(0 = makeNode, 1 = nodeTree),
         # con los parametros argv pasados como array.
     # Retorna 3 arrays, los modelos, los tiempos de cada modelo y
         # los resultados de cada modelo
@@ -71,7 +71,7 @@ def crossValidationTrain(kFold, data, classAmm, modelType, argv, dumpArgv):
         dumpModel(model, dumpDir)
         resultArr.append(Evaluation(model, arrEv, classAmm))
     return modelArr, timeArr, resultArr
-# return [model] [time] [score] 
+# return [model] [time] [score]
 
 def normalTrain(data, evData, classAmm, modelType, argv, dumpArgv):
     start = time.time()
@@ -94,21 +94,29 @@ dumpArgv = [DUMP_SETTINGS[0] + DATA_LOCATION, DUMP_SETTINGS[1]]
 attTypes = [2 for _ in range(10)] + [1 for _ in range(44)]
 for att in [0, 5]:
     attTypes[att] = 0
-        
 
-threshs = [0.2 , 0.1, 0.01, 0.001, 0.0001, 0.0]
-folds = [5, 6, 7, 8, 9, 10]
-funcs = []
 
-for th in threshs:
-    argvModel1 = [data, 54, True, 0, attTypes, th]
-    print("Entre ", th)
+# threshs = [0.2 , 0.1, 0.01, 0.001, 0.0001, 0.0]
+# folds = [5, 6, 7, 8, 9, 10]
+# funcs = []
+argvModel1 = [data, 54, True, 0, attTypes, 0.01]
+model1, timer, score = crossValidationTrain(K_FOLD_PARTITIONS, np.append(data, evData,0), CLASS_AMM, 0, argvModel1, dumpArgv)
+print("| - | Micro Score | Macro Score |")
+print("|--:|------------:|------------:|")
+for ind, model in enumerate(model1):
+    ev = Evaluation(model, evData, 3)
+    _, _, microFScore, _, _, macroFScore = ev.getStats()
+    print('|',ind,'|', microFScore, '|', macroFScore, '|')
 
-    model1, timer, score = crossValidationTrain(K_FOLD_PARTITIONS, np.append(data, evData,0), CLASS_AMM, 0, argvModel1, dumpArgv)
-    for tm, sc in zip(timer, score):
-        print("Model time: {}".format(tm))
-        sc.normalPrint()
+# for th in threshs:
+#     argvModel1 = [data, 54, True, 0, attTypes, th]
+#     print("Entre ", th)
 
-    model2, timer2, score2 = normalTrain(data, evData, CLASS_AMM, 0, argvModel1, dumpArgv)
-    print("Model time: {}".format(timer2))
-    score2.normalPrint()
+#     model1, timer, score = crossValidationTrain(K_FOLD_PARTITIONS, np.append(data, evData,0), CLASS_AMM, 0, argvModel1, dumpArgv)
+#     for tm, sc in zip(timer, score):
+#         print("Model time: {}".format(tm))
+#         sc.normalPrint()
+
+#     model2, timer2, score2 = normalTrain(data, evData, CLASS_AMM, 0, argvModel1, dumpArgv)
+#     print("Model time: {}".format(timer2))
+#     score2.normalPrint()

@@ -6,7 +6,7 @@ import time as tm
 import counter
 
 
-def makeNode (trainingData, catAmm, partitionStyle = True, entropyFunc = 0, catTypeArr = None, entThresh=0.0 ,catDict = None, classDict = None, counter = None):
+def makeNode (trainingData, catAmm, partitionStyle = False, entropyFunc = 0, catTypeArr = None, entThresh=0.01 ,catDict = None, classDict = None, counter = None):
   # Partition style: "False" for partition with <, "True" for <= (see __partition() )
   # entropyFunc: 0 -> shannonEntropy, 1 -> giniImpuruty, 2 -> misclassification.
   if catTypeArr == None:
@@ -149,7 +149,7 @@ def __gainAndThreshold(varDict, examples, attribute, examplesEntropy):
     lastAttrValue = sortedExamples[0][attribute]
     for row in sortedExamples[1:]:
       if row[-1] != lastClass:
-        possibleThresholds.append((row[attribute]))
+        possibleThresholds.append((row[attribute]+lastAttrValue)/2)
       lastClass = row[-1]
       lastAttrValue = row[attribute]
 
@@ -169,7 +169,7 @@ def __gainAndThreshold(varDict, examples, attribute, examplesEntropy):
       lessLength = dividerRow
     partitionLess = sortedExamples[:lessLength]
     partitionEqualGreat = sortedExamples[dividerRow:]
-    if (len(partitionLess) == 0 or len(partitionEqualGreat) == 0) and varDict["entropyFunc"]!=2:
+    if (len(partitionLess) == 0 or len(partitionEqualGreat) == 0) and varDict["entropyFunc"]!=2 and False:
       IG = 0.0
     else:
       HLess = (lessLength/len(examples))*__entropy(partitionLess, varDict["entropyFunc"])
