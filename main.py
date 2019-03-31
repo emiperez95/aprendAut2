@@ -47,7 +47,7 @@ classNameDict = {
     3: 'Iris Virginica',
 }
 
-model1 = makeNode(data, 4, False, 1, [0,0,0,0])
+model1 = makeNode(data, 4, False, 2, [0,0,0,0])
 eval = Evaluation(model1, evData, 3)
 eval.normalPrint()
 
