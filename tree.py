@@ -186,7 +186,7 @@ def __gainAndThreshold(varDict, examples, attribute, examplesEntropy):
         else:
           greater = (len(partitionEqualGreat)/len(examples))*np.log(len(partitionEqualGreat)/len(examples))
         splitInfo = -lesser - greater
-        
+
         if splitInfo != 0:
           IG = IG / splitInfo
 
