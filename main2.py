@@ -14,7 +14,7 @@ sys.setrecursionlimit(200000)
 
 #=========Vars========
 DATA_LOCATION = "data/"
-DUMP_SETTINGS = ("data/", ".th") 
+DUMP_SETTINGS = ("data/", ".th")
 K_FOLD_PARTITIONS = 5
 CLASS_AMM = 7
 
@@ -63,12 +63,12 @@ def crossValidationTrain(kFold, data, classAmm, modelType, argv, dumpArgv):
 
         start = time.time()
         if modelType == 0:
-            model = makeNode(*argv)
             argv[0] = arrTr
+            model = makeNode(*argv)
             dumpDir = dumpArgv[0] + "CV_" + str(i) + "_Func{}_Rep{}_Thr{}_Kfold{}_WHOLE".format(argv[3],argv[5], argv[6], kFold) + dumpArgv[1]
         else:
-            model = PoolTree(*argv)
             argv[0] = arrTr
+            model = PoolTree(*argv)
             dumpDir = dumpArgv[0] + "CV_" + str(i) + "_Func{}_Rep{}_Thr{}_Kfold{}_POOL".format(argv[4],argv[6], argv[7], kFold) + dumpArgv[1]
         modelArr.append(model)
         res = time.time()
@@ -85,14 +85,14 @@ def crossValidationTrain(kFold, data, classAmm, modelType, argv, dumpArgv):
         evalRes.normalPrint()
     return modelArr, timeArr, resultArr
     # return None, None, None
-# return [model] [time] [score] 
+# return [model] [time] [score]
 
 def normalTrain(data, evData, classAmm, modelType, argv, dumpArgv):
     start = time.time()
     if modelType == 0:
         dumpDir = dumpArgv[0] + "NORMAL_" + "_Func{}_Rep{}_Thr{}_WHOLE".format(argv[3],argv[5], argv[6]) + dumpArgv[1]
-        model = makeNode(*argv) 
-    else: 
+        model = makeNode(*argv)
+    else:
         dumpDir = dumpArgv[0] + "NORMAL_" + "_Func{}_Rep{}_Thr{}_POOL".format(argv[4],argv[6], argv[7]) + dumpArgv[1]
         model = PoolTree(*argv)
     timer = time.time()-start
@@ -110,13 +110,13 @@ def normalTrain(data, evData, classAmm, modelType, argv, dumpArgv):
 
 attTypes = [2 for _ in range(10)] + [1 for _ in range(44)]
 for att in [0, 5]:
-    attTypes[att] = 0        
+    attTypes[att] = 0
 
 #Feli
-size = ["50k", "5k"]
-repetition = [0,1]
-funcs = [0,2]
-threshs = [0.1, 0.01, 0.001]
+size = ["50k"]
+repetition = [1]
+funcs = [0]
+threshs = [0.01]
 folds = [5]
 
 #Leo
