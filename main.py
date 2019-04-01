@@ -121,16 +121,16 @@ classNameDict = {
     3: 'Iris Virginica',
 }
 
-attTypes = [0, 0, 0, 0]
-argvModel1 = [data, 4, True, 0, attTypes, 0.01]
-model1, timer, score = crossValidationTrain(K_FOLD_PARTITIONS, np.append(data, evData,0), CLASS_AMM, 0, argvModel1, dumpArgv)
-print("| - | Micro Score | Macro Score |")
-print("|--:|------------:|------------:|")
-for ind, model in enumerate(model1):
-    ev = Evaluation(model, evData, 3)
-    print(nodeToBtNode(model))
-    _, _, microFScore, _, _, macroFScore = ev.getStats()
-    print('|',ind,'|', microFScore, '|', macroFScore, '|')
+# attTypes = [0, 0, 0, 0]
+# argvModel1 = [data, 4, True, 0, attTypes, 0.01]
+# model1, timer, score = crossValidationTrain(K_FOLD_PARTITIONS, np.append(data, evData,0), CLASS_AMM, 0, argvModel1, dumpArgv)
+# print("| - | Micro Score | Macro Score |")
+# print("|--:|------------:|------------:|")
+# for ind, model in enumerate(model1):
+#     ev = Evaluation(model, evData, 3)
+#     print(nodeToBtNode(model))
+#     _, _, microFScore, _, _, macroFScore = ev.getStats()
+#     print('|',ind,'|', microFScore, '|', macroFScore, '|')
 # model2 = PoolTree(data, 3, 4 , False, 2, [0,0,0,0])
 # eval = Evaluation(model2, evData, 3)
 # eval.prettyPrintRes(classNameDict)
