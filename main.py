@@ -17,7 +17,7 @@ from evaluation import Evaluation
 #=========Vars========
 DATA_LOCATION = "data"
 DUMP_SETTINGS = ("persist/", ".th")
-K_FOLD_PARTITIONS = 10
+K_FOLD_PARTITIONS = 5
 CLASS_AMM = 3
 
 ##==========AUX_FUNCS=======
@@ -96,6 +96,7 @@ def makeSimpleTree(metric):
         tree = makeNode(data, 4, False, 2, [0,0,0,0])
     print(tree)
     print(nodeToBtNode(tree))
+    return tree
 
 evaluationData = DATA_LOCATION + "/evaluationData.npy"
 trainingData = DATA_LOCATION + "/trainingData.npy"
@@ -121,49 +122,47 @@ classNameDict = {
     3: 'Iris Virginica',
 }
 
-# attTypes = [0, 0, 0, 0]
-# argvModel1 = [data, 4, True, 0, attTypes, 0.01]
-# model1, timer, score = crossValidationTrain(K_FOLD_PARTITIONS, np.append(data, evData,0), CLASS_AMM, 0, argvModel1, dumpArgv)
-# print("| - | Micro Score | Macro Score |")
-# print("|--:|------------:|------------:|")
-# for ind, model in enumerate(model1):
-#     ev = Evaluation(model, evData, 3)
-#     print(nodeToBtNode(model))
-#     _, _, microFScore, _, _, macroFScore = ev.getStats()
-#     print('|',ind,'|', microFScore, '|', macroFScore, '|')
-# model2 = PoolTree(data, 3, 4 , False, 2, [0,0,0,0])
-# eval = Evaluation(model2, evData, 3)
-# eval.prettyPrintRes(classNameDict)
-# eval.printMkdownStats()
+if __name__ == "__main__":
+    attTypes = [0, 0, 0, 0]
+    argvModel1 = [data, 4, True, 0, attTypes, 0.01]
+    model1, timer, score = crossValidationTrain(K_FOLD_PARTITIONS, np.append(data, evData,0), CLASS_AMM, 0, argvModel1, dumpArgv)
+    print('=====================================')
+    print('====== 5-FOLD CROSS VALIDATION ======')
+    print('=====================================')
+    for ind, model in enumerate(model1):
+        ev = Evaluation(model, evData, 3)
+        print()
+        print("5-fold cross validation number", ind+1, "tree:")
+        print(nodeToBtNode(model))
+        _, _, microFScore, _, _, macroFScore = ev.getStats()
+        print('Number ',ind+1, ' - Micro Fscore(0.5) =', microFScore, ' - Macro Fscore(0.5) =', macroFScore)
 
-# entropyFunc = [0, 1, 2]
-# partitionStyle = [True, False] #Model1
-# classifier = [0, 1] #Model2
-# for ent in entropyFunc:
-#     print()
-#     print("Entropy func: {} = ".format(ent), end="")
-#     for part, cla in zip(partitionStyle, classifier):
-#         model1 = makeNode(data, 4, part, ent, [0,0,0,0])
-#         model2 = PoolTree(data, 3, 4 , cla)
+    print('\n\n=====================================')
+    print('======== POOL OF BINARY TREES =======')
+    print('=====================================')
+    model2 = PoolTree(data, 3, 4 , False, 2, [0,0,0,0])
+    eval = Evaluation(model2, evData, 3)
+    print('\nResults: ')
+    eval.printMkdownStats()
+    print('\n\nConfussion Matrix: \n')
+    eval.prettyPrintRes(classNameDict)
+    print('=====================================')
 
-#         # Evaluate models
-#         model1Score = 0
-#         model2Score = 0
-#         for row in evData:
-#             res = model1.classify(row[:-1])
-#             # print("  Respuesta modelo 1: ", res)
-#             if res == row[-1]:
-#                 model1Score += 1
 
-#             res = model2.classify(row[:-1])
-#             # print("  Respuesta modelo 2: ", res)
-#             if res == row[-1]:
-#                 model2Score += 1
+    print('\n\n===============================================')
+    print('======== Trees with different metrics: ========')
+    print('============= 0: Shannon Entropy ==============')
+    print('============= 1: Gini Impurity ================')
+    print('============= 2: Misclassification ============')
+    print('===============================================')
 
-#         # print("PartitionStyle: {}, Classifier: {}".format(part, cla))
-#         # print("      Modelo 1: {}, part {}".format(model1Score/lenEvData, part))
-#         # print("      Modelo 2: {}, clas {}".format(model2Score/lenEvData, cla))
-#         print(" 1:{} - 2:{} =".format(model1Score/lenEvData, model2Score/lenEvData), end="")
-#         # print(nodeToBtNode(model1))
-#         # print(time.time()-start)
-#         # print()
+    for i in [0,1,2]:
+        tree = makeNode(data, 4, False, i, [0,0,0,0])
+        ev = Evaluation(tree, evData, 3)
+
+        print("Function ", i)
+        print('Results: ', end="")
+        ev.printMkdownStats()
+        print('\nConfusion Matrix:')
+        ev.prettyPrintRes(classNameDict)
+        print('\n----\n')
