@@ -9,6 +9,8 @@ from itertools import chain, combinations
 from evaluation import Evaluation
 
 
+import sys
+sys.setrecursionlimit(200000)
 
 #=========Vars========
 DATA_LOCATION = "data/"
@@ -62,15 +64,20 @@ def crossValidationTrain(kFold, data, classAmm, modelType, argv, dumpArgv):
         start = time.time()
         if modelType == 0:
             model = makeNode(*argv)
+            argv[0] = arrTr
             dumpDir = dumpArgv[0] + "CV_" + str(i) + "_Func{}_Rep{}_Thr{}_Kfold{}_WHOLE".format(argv[3],argv[5], argv[6], kFold) + dumpArgv[1]
         else:
             model = PoolTree(*argv)
+            argv[0] = arrTr
             dumpDir = dumpArgv[0] + "CV_" + str(i) + "_Func{}_Rep{}_Thr{}_Kfold{}_POOL".format(argv[4],argv[6], argv[7], kFold) + dumpArgv[1]
         modelArr.append(model)
-        resTime = time.time()-start
+        res = time.time()
+        resTime = res-start
+        print("Model time: ", resTime)
         model.setTime(resTime)
         timeArr.append(resTime)
         dumpModel(model, dumpDir)
+        print("Dump time: ", time.time()-res)
         evalRes = Evaluation(model, arrEv, classAmm)
         resultArr.append(evalRes)
         print("______________")
@@ -106,25 +113,32 @@ for att in [0, 5]:
     attTypes[att] = 0        
 
 #Feli
-size = ['50k', '5k']
+size = ["50k", "5k"]
+repetition = [0,1]
+funcs = [0,2]
 threshs = [0.1, 0.01, 0.001]
 folds = [5]
-funcs = [0, 2]
-repetition = [0,1] #REPETITION = 0 o 1
 
 #Leo
-size = ["500k"]#['500k', '50k', '5k']
-threshs = [0.1, 0.01, 0.001]
-folds = [5]
-funcs = [0, 2]
-repetition = [0]#[0,1]
-
-# YO
 size = ["500k"]
-threshs = [0.1, 0.01, 0.001]
-folds = [5]
-funcs = [0]
 repetition = [1]
+funcs = [0]
+threshs = [0.01]
+folds = [5]
+
+#Yo
+size = ["500k"]
+repetition = [1]
+funcs = [0]
+threshs = [0.001]
+folds = [5]
+
+# size = ["500k", "50k", "5k"]
+# repetition = [0,1]
+# funcs = [0,2]
+# threshs = [0.1, 0.01, 0.001]
+# folds = [5]
+
 
 trainingData = "/trainingData.npy"
 evaluationData = DATA_LOCATION+"/evDataCover.npy"
