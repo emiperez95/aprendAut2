@@ -4,12 +4,6 @@ from poolTree import PoolTree
 import random
 import os
 
-
-# Si se desea utilizar una semilla 'aletoria', comentar las dos siguientes lineas
-RANDOM_SEED = 123123
-random.seed(RANDOM_SEED)
-
-
 # +=======================CREACION DE DIRECTORIOS
 print("Creando las carpetas", end='')
 folders = ["500k", "50k", "5k"]
